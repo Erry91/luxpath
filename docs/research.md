@@ -73,3 +73,66 @@ To ask architects and lighting designers (for example, through a contact who use
 - EN 1838:2024: [NSI notice](https://documents.nsi.org.uk/wp-content/uploads/2025/01/NSI-002-25-Publication-of-BS-EN-1838_2024.pdf), [Ansell Lighting summary](https://ansell-lighting.com/en/articles/technical/emergency-lighting-en-18382024-bs-en-18382024), [BSI](https://knowledge.bsigroup.com/products/lighting-applications-emergency-lighting-for-buildings), [NEN 1010 §560 guide](https://nen.sulerr.com/en/guides/nen-1010/560-noodverlichting)
 - Values: [TRILUX escape routes](https://trilux.com/en/lighting-practice/indoor-lighting/general-requirements/emergency-lighting/safety-lighting-for-escape-routes), [LEDiL](https://www.ledil.com/news_all/articles-and-whitepapers/this-is-an-emergency-how-the-right-light-can-help-you-out/), [Fagerhult](https://www.fagerhult.com/Support-center/Emergency-lighting/)
 - Crates: [eulumdat](https://docs.rs/crate/eulumdat/latest), [gldf-rs](https://docs.rs/crate/gldf-rs/latest), [lidrs](https://docs.rs/crate/lidrs/latest)
+
+## 6. Direction under study: emergency lighting checks on IFC (BIM) models
+
+> Added 2026-10-16. The question: instead of competing with DIALux, could luxpath check emergency lighting directly
+> on an IFC model exported from Revit, Archicad or Bonsai?
+
+### What the IFC schema can carry (good)
+- **Luminaires:** `IfcLightFixture` / `IfcLightFixtureType`. Since IFC4, `PredefinedType = SECURITYLIGHTING` means
+  "directing occupants in an emergency" (exit signs, emergency lights).
+- **`Pset_LightFixtureTypeSecurityLighting`:** SecurityLightingType, FixtureHeight, SelfTestFunction,
+  BackupSupplySystem, PictogramEscapeDirection, Addressablility.
+- **Photometry:** `IfcLightSourceGoniometric` (flux, colour temperature, emission source) with a distribution that is
+  either an **external file** (EULUMDAT, IES, CIBSE TM14) or an **inline table** (`IfcLightIntensityDistribution`,
+  normally cd/klm, our internal unit).
+- **Escape-relevant building data:** `IfcSpace` with `Pset_SpaceFireSafetyRequirements.FireExit` (corridors used as
+  exits), `Pset_DoorCommon.FireExit`, `IfcSpatialZone` FIRESAFETY (compartments), `IfcStair`. Fire equipment and
+  call points are also IFC element types.
+- **No dedicated escape-route entity.** Routes are computed from the space graph (TU Wien, FireBIM guideline,
+  graph-based egress research), not stored.
+
+### What exporters actually write (weak)
+- DIAL's own documentation of DIALux Bridge for Revit: luminaires already placed in Revit arrive in DIALux as
+  **placeholders without photometric data**.
+- A DIALux forum user reports the reverse: IFC exported from DIALux, opened in Revit, showed no IES distribution.
+- Sample check (BIMCompNet dataset, IFC4 components extracted from real models): `IfcLightFixture` with **no
+  PredefinedType**, and only `Pset_LightFixtureTypeCommon.TotalWattage` and
+  `Pset_ManufacturerTypeInformation.Manufacturer`. No goniometric source, no file reference.
+- GitHub code search: zero IFC files containing `IFCLIGHTSOURCEGONIOMETRIC` (it doesn't index large files).
+- **Conclusion:** expect positions, orientations, types and a manufacturer or product code, but **no photometry**.
+  It must be linked by us (product code → IES/LDT/GLDF file), or the user must assign it.
+
+### Competition in BIM
+- **DIALux Bridge for Revit** (DIALux Pro subscription, Revit 2025, IFC round trip, builds Revit families to
+  ANSI/IES TM-32-24, the IES standard for BIM luminaire parameters). Revit-only and paid.
+- No open-source tool found that checks lighting requirements on IFC.
+
+### What the idea would look like
+1. Read IFC (reuse `ifc-lite` crates, MPL-2.0).
+2. Find emergency luminaires, then link photometry through a mapping file (type or product code → photometric file).
+3. **Infer what EN 1838 needs from the model:** corridors flagged FireExit become escape routes checked over their
+   **full floor area** (matching the 2024 full-width rule); large spaces become open areas with the border excluded;
+   exit doors, stairs, fire equipment and call points become points of emphasis.
+4. Run the luxpath engine.
+5. Report failures as **BCF** issues that open in the architect's own tool, plus an IDS file describing the data
+   the model must contain.
+
+Risks: model quality varies (missing spaces, FireExit rarely set); the photometry mapping is manual work; DIALux
+Bridge covers part of the Revit market; the users would be BIM coordinators and fire engineers more than lighting
+designers.
+
+Sources: [IfcLightSourceGoniometric](https://standards.buildingsmart.org/IFC/RELEASE/IFC4/FINAL/HTML/schema/ifcpresentationorganizationresource/lexical/ifclightsourcegoniometric.htm),
+[IfcLightDistributionDataSourceSelect](https://standards.buildingsmart.org/IFC/RELEASE/IFC4/FINAL/HTML/schema/ifcpresentationorganizationresource/lexical/ifclightdistributiondatasourceselect.htm),
+[Pset_LightFixtureTypeSecurityLighting](https://standards.buildingsmart.org/IFC/RELEASE/IFC4_3/HTML/lexical/Pset_LightFixtureTypeSecurityLighting.htm),
+[IfcLightFixtureTypeEnum](https://www.nibs.org/files/docs/IFC4x2_Bridge/schema/ifcelectricaldomain/lexical/ifclightfixturetypeenum.htm),
+[Pset_SpaceFireSafetyRequirements](https://standards.buildingsmart.org/IFC/RELEASE/IFC4_3/HTML/lexical/Pset_SpaceFireSafetyRequirements.htm),
+[FireBIM modelling guideline](https://itea4.org/project/workpackage/deliverable/document/download/1121/firebim-modelling-guideline-snapshot-2026-09-07.html),
+[TU Wien escape-route IFC models](https://researchdata.tuwien.ac.at/records/tp76y-pxw11),
+[DIALux Bridge for Revit](https://www.dialux.com/en-GB/dialux-pro/dialux-bridge-for-revit),
+[DIALux and Revit workflow](https://www.dial.de/en-GB/news/dialux-evo-14-and-revit-a-seamless-workflow-for-lighting-design),
+[DIALux forum: IFC and IES](https://community.dialux.com/get-support-with-dialux/post/does-the-exported-ifc-file-contain-ies-files-ASl3tAkW2iXK8HR),
+[Revit photometric webs](https://help.autodesk.com/cloudhelp/2023/ENU/Revit-DocumentPresent/files/GUID-21089EF8-4DD4-4DCE-A7F7-C21F7B239E21.htm),
+[IES TM-32-24](https://lightnowblog.com/2024/08/two-new-ies-standards-for-bim-and-lighting-maintenance),
+[BIMCompNet](https://github.com/Yang-Mingsong/BIMCompNet).
