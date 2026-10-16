@@ -14,6 +14,7 @@ const LAYERS: &[(&str, u8)] = &[
     ("luxpath-photometry", 1),
     ("luxpath-scene", 2),
     ("luxpath-calc", 3),
+    ("luxpath-ifc", 3),
     ("luxpath-rules", 4),
     ("luxpath-report", 5),
     ("luxpath-cli", 9),

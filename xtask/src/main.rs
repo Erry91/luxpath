@@ -27,8 +27,15 @@ fn main() -> ExitCode {
 }
 
 /// Crates that must build for `wasm32-unknown-unknown` (the browser build). Apps and xtask don't.
-pub const WASM_CRATES: &[&str] =
-    &["luxpath-geom", "luxpath-photometry", "luxpath-scene", "luxpath-calc", "luxpath-rules", "luxpath-report"];
+pub const WASM_CRATES: &[&str] = &[
+    "luxpath-geom",
+    "luxpath-photometry",
+    "luxpath-scene",
+    "luxpath-calc",
+    "luxpath-rules",
+    "luxpath-report",
+    "luxpath-ifc",
+];
 
 fn ci() -> Result<(), String> {
     cargo(&["fmt", "--all", "--check"])?;

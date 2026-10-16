@@ -15,7 +15,7 @@ updated.
 | M4 | EN 1838:2024 | Every requirement in `docs/standards-parity.md`: escape routes over the full width, uniformity, open areas, high-risk areas, points of emphasis, glare limits, declared duration/response | Each P0 requirement tested on both sides of its threshold; values verified against the standard's text | 25–40 | planned |
 | M5 | Reports | Text, JSON (stable schema), SVG plan with false colours and failing points; PDF later | A report a designer can read without knowing the tool | 15–25 | planned |
 | M6 | Validation | Black-box comparison with an independent tool (DIALux evo, Relux) on ≥10 synthetic scenes; divergences explained in `docs/validation.md` | Agreement within a stated tolerance, or a documented reason | 10–20 + human | planned |
-| M7 | Plans | DXF import (underlay and outlines), automatic luminaire placement suggestions, GLDF reading | A DXF floor plan becomes a checkable scene in under 10 minutes | 30–50 | planned |
+| M7 | Plans | IFC models (inspector done; scenes from models with a photometry mapping by product code or type name), DXF import, automatic placement suggestions, GLDF reading | A DXF floor plan becomes a checkable scene in under 10 minutes | 30–50 | planned |
 | M8 | Apps | WASM web calculator (single route/area, embeddable), then a plan editor (egui, desktop and web) | Web calculator deployed; editor can draw, place, compute, report | 60–100 | planned |
 | M9 | Beyond emergency | First reflection, then inter-reflection (radiosity); EN 12464-1 interior checks with UGR; EN 13201 road lighting | Each standard gets its own parity doc before work starts | 100+ | planned |
 

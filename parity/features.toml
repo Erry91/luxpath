@@ -296,6 +296,24 @@ milestone = "M8"
 status = "planned"
 
 [[feature]]
+id = "interop.ifc-inspect"
+title = "Inspect an IFC model: luminaires, emergency marking, product codes, photometry, fire exits, safety equipment"
+area = "interop"
+tier = "P1"
+milestone = "M7"
+status = "partial"
+evidence = ["crates/ifc/src/tests.rs::ifc4_luminaires_are_classified", "crates/ifc/src/tests.rs::ifc2x3_flow_terminals_typed_as_lights_count_as_luminaires", "crates/ifc/src/tests.rs::fire_exits_stairs_and_safety_equipment_are_counted", "crates/ifc/src/tests.rs::truncated_files_never_panic"]
+notes = "`luxpath inspect-ifc`, text or JSON; IFC2x3 and IFC4 STEP. Checked on 9 public models (docs/research.md §7). Missing: geometry (positions, space outlines), per-storey breakdown, IfcZone/IfcSpatialZone, ifcZIP and ifcXML, IFC4.3-specific entities."
+
+[[feature]]
+id = "interop.ifc-scene"
+title = "Build a checkable scene from an IFC model (luminaires, spaces, exits) with a photometry mapping file"
+area = "interop"
+tier = "P1"
+milestone = "M7"
+status = "planned"
+
+[[feature]]
 id = "interop.dxf-import"
 title = "Import floor plans from DXF as an underlay and as room outlines"
 area = "interop"

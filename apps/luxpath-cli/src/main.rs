@@ -1,7 +1,8 @@
 //! `luxpath`: the command-line tool.
 //!
-//! M0 has one demonstration command, `point`, which computes direct illuminance under an
-//! isotropic source. `luxpath check scene.toml` is M3–M4.
+//! Commands: `point` (direct illuminance under an isotropic source, a demonstration) and
+//! `inspect-ifc` (what an IFC model contains for an emergency-lighting check). `luxpath check
+//! scene.toml` is M3–M4.
 
 use std::process::ExitCode;
 
@@ -15,6 +16,8 @@ luxpath — open emergency-lighting calculations
 USAGE:
     luxpath point <mounting height m> <horizontal offset m> [flux lm]
         Direct illuminance on the floor from an isotropic 1000 cd/klm source (demonstration).
+    luxpath inspect-ifc <model.ifc> [--json]
+        What an IFC model contains for an emergency-lighting check, and what is missing.
     luxpath --version
     luxpath --help
 
@@ -41,10 +44,39 @@ fn main() -> ExitCode {
                 ExitCode::from(2)
             }
         },
+        Some("inspect-ifc") => match inspect_ifc(args.get(1..).unwrap_or_default()) {
+            Ok(text) => {
+                print!("{text}");
+                ExitCode::SUCCESS
+            }
+            Err(message) => {
+                eprintln!("error: {message}");
+                ExitCode::from(2)
+            }
+        },
         Some(other) => {
             eprintln!("error: unknown command `{other}`\n\n{USAGE}");
             ExitCode::from(2)
         }
+    }
+}
+
+/// Larger files are refused rather than read whole into memory.
+const MAX_IFC_BYTES: u64 = 2 << 30;
+
+fn inspect_ifc(args: &[String]) -> Result<String, String> {
+    let json = args.iter().any(|a| a == "--json");
+    let path = args.iter().find(|a| !a.starts_with("--")).ok_or("missing the IFC file path")?;
+    let size = std::fs::metadata(path).map_err(|e| format!("{path}: {e}"))?.len();
+    if size > MAX_IFC_BYTES {
+        return Err(format!("{path}: {size} bytes is more than the {MAX_IFC_BYTES}-byte limit"));
+    }
+    let bytes = std::fs::read(path).map_err(|e| format!("{path}: {e}"))?;
+    let inspection = luxpath_ifc::inspect(&bytes).map_err(|e| format!("{path}: {e}"))?;
+    if json {
+        serde_json::to_string_pretty(&inspection).map(|s| s + "\n").map_err(|e| e.to_string())
+    } else {
+        Ok(inspection.to_text())
     }
 }
 

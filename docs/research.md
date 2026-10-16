@@ -136,3 +136,38 @@ Sources: [IfcLightSourceGoniometric](https://standards.buildingsmart.org/IFC/REL
 [Revit photometric webs](https://help.autodesk.com/cloudhelp/2023/ENU/Revit-DocumentPresent/files/GUID-21089EF8-4DD4-4DCE-A7F7-C21F7B239E21.htm),
 [IES TM-32-24](https://lightnowblog.com/2024/08/two-new-ies-standards-for-bim-and-lighting-maintenance),
 [BIMCompNet](https://github.com/Yang-Mingsong/BIMCompNet).
+
+## 7. Inspecting public models (luxpath inspect-ifc)
+
+> Added 2026-10-16. Nine public IFC files were run through `luxpath inspect-ifc`. They live in the git-ignored
+> `plan/samples/` and come from [youshengCode/IfcSampleFiles](https://github.com/youshengCode/IfcSampleFiles),
+> [andrewisen/bim-whale-ifc-samples](https://github.com/andrewisen/bim-whale-ifc-samples) (MIT) and
+> [buildingSMART/Sample-Test-Files](https://github.com/buildingSMART/Sample-Test-Files).
+
+| Model | Exporter | Luminaires (types) | Emergency | Product code | Photometry | Spaces (FireExit) | Doors (FireExit) | Stairs | Fire equip. |
+|---|---|---|---|---|---|---|---|---|---|
+| Revit MEP (IFC4) | Revit 2021 | 410 (5) | 0 | 0 | none | 163 (0) | 124 (0) | 8 | 6 |
+| Revit ARC (IFC4) | Revit 2021 | 10 (7) | 0 | 0 (manufacturer only) | none | 0 | 16 (0) | 3 | 0 |
+| Revit ARC + fire ratings (IFC4) | Revit 2021 | 10 (7) | 0 | 0 | none | 0 | 16 (0) | 3 | 0 |
+| Duplex MEP (IFC2x3) | Revit MEP 2011 | 28 (3) | 0 | 0 | none* | 42 (0) | 0 | 0 | 0 |
+| Duplex Electrical (IFC2x3) | Revit 2013 | 28 (3) | 0 | 0 | none* | 1 (0) | 0 | 0 | 0 |
+| AdvancedProject (IFC2x3) | Revit 2021 | 0 | – | – | – | 8 (0) | 126 (0) | 9 | 0 |
+| LargeBuilding (IFC2x3) | Revit 2021 | 0 | – | – | – | 8 (0) | 18 (0) | 0 | 0 |
+| SampleHouse (IFC4) | Xbim | 0 | – | – | – | 4 (0) | 3 (0) | 0 | 0 |
+| Building-Architecture (IFC4) | SketchUp IFC manager | 0 | – | – | – | 2 (0) | 0 | 0 | 0 |
+
+\* Revit's own "Photometrics" property set is exported, but it describes a generic `Point+HemiSpherical`
+source with intensity 0: a rendering placeholder, not photometric data.
+
+**What this means:**
+- **Photometry never survives export**, as predicted (§6). It has to come from a mapping.
+- **Product codes are absent** in every Revit export. But luminaires collapse into **few types**: 410 → 5
+  in the MEP model. So the practical mapping key is the **type name** (e.g. `600x600 - 277`), and a project
+  needs a handful of photometric files, not hundreds.
+- **Nothing is marked as emergency lighting** and **nothing is flagged FireExit**, in any sample. Escape routes,
+  exits and emergency luminaires would have to be identified another way: by a mapping, by names, or through a
+  model requirement the architect fills in (an IDS file luxpath could provide).
+- **Spaces, doors and stairs are usually there**, which is what derived routes and open areas need.
+
+Caveats: these are demonstration models, not production projects, and most come from Revit. A real project
+from a practising office (kept private in `plan/`) is the next evidence needed.

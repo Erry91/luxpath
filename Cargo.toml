@@ -17,10 +17,13 @@ luxpath-scene = { path = "crates/scene", version = "0.0.1" }
 luxpath-calc = { path = "crates/calc", version = "0.0.1" }
 luxpath-rules = { path = "crates/rules", version = "0.0.1" }
 luxpath-report = { path = "crates/report", version = "0.0.1" }
+luxpath-ifc = { path = "crates/ifc", version = "0.0.1" }
 # external
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 toml = "0.9"
+# IFC (STEP) parsing; MPL-2.0, used unmodified as a dependency (AGENTS.md §1.2)
+ifc-lite-core = "20.4"
 
 [workspace.lints.rust]
 unsafe_code = "forbid"

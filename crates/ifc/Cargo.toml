@@ -1,0 +1,15 @@
+[package]
+name = "luxpath-ifc"
+description = "Reads IFC (BIM) models and reports what they contain for emergency-lighting checks"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+
+[dependencies]
+ifc-lite-core.workspace = true
+serde.workspace = true
+
+[lints]
+workspace = true

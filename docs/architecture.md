@@ -9,7 +9,7 @@
                                   ├──► calc ──► rules (EN 1838) ──► report ──► text / JSON / SVG / PDF
  scene.toml ──────► scene ────────┘
                      ▲
- DXF plans (M7) ─────┘
+ DXF plans, IFC models (M7) ─────┘
 ```
 
 The apps (`luxpath-cli` now; a web calculator and an editor later) read files, call the core crates, and write
@@ -27,6 +27,7 @@ new crate isn't listed in `xtask/src/layers.rs`.
 | L1 | `luxpath-photometry` | C-γ intensity tables (cd/klm), IES and EULUMDAT readers, symmetry expansion |
 | L2 | `luxpath-scene` | Rooms, routes, areas, points of emphasis, placed luminaires; the TOML format |
 | L3 | `luxpath-calc` | Direct illuminance at points and over grids; statistics |
+| L3 | `luxpath-ifc` | Reads IFC (BIM) models through `ifc-lite-core`; today the inspector, later scenes built from models |
 | L4 | `luxpath-rules` | Standards checks: findings with clause, measured value, threshold, verdict |
 | L5 | `luxpath-report` | Text, JSON, SVG (later PDF) output |
 | L9 | `luxpath-cli`, `xtask` | Applications and tooling; only these may do I/O or use UI crates |
