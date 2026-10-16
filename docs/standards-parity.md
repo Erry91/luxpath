@@ -7,8 +7,9 @@ guides and summaries (see `docs/research.md`), not from the standard's text. Cla
 someone checks the purchased standard (gap 4). Values are facts restated in our own words; never paste the
 standard's text here (`AGENTS.md` §1.1).
 
-Context: EN 1838:2024 replaced the 2013 edition (in the UK from 31 Dec 2024; some national versions are dated
-2025). It is meant to be read with **EN 50172:2024** (system design, duration, maintenance). National rules may add
+Context: EN 1838:2024 replaced the 2013 edition. National bodies publish the same text under their own number and
+year: **UNI EN 1838:2025** in Italy (in force 6 Feb 2025, [UNI store](https://store.uni.com/uni-en-1838-2025)),
+BS EN 1838:2024 in the UK (31 Dec 2024), NEN-EN 1838:2025 in the Netherlands. The requirements are identical. It is meant to be read with **EN 50172:2024** (system design, duration, maintenance). National rules may add
 to it, for example longer durations.
 
 ## Requirements
@@ -25,6 +26,7 @@ to it, for example longer durations.
 | High-risk task areas: uniformity | ≥ 0.1 (2013 summaries) | | `en1838.high-risk` | planned |
 | Points of emphasis and safety equipment (exits, changes of direction and level, fire-fighting, first aid, call points): illuminance near them; more detail in 2024 | to read | | `en1838.points-of-emphasis` | planned |
 | Local area lighting (new in 2024) | to read | | — | not yet planned |
+| Adaptive escape-route emergency lighting (in scope per UNI's summary) | to read | | — | not yet planned |
 | Disability glare: maximum luminous intensity by mounting height, in the field of view | table by mounting height | | `en1838.glare-limits` | planned |
 | Colour rendering of emergency light | Ra ≥ 40 | | `en1838.declarations` | planned |
 | Response time: share of required illuminance within a time limit | 50 % within 5 s, 100 % within 60 s | | `en1838.declarations` | planned |
