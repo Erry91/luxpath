@@ -1,0 +1,6 @@
+/target
+.DS_Store
+*~
+# Private, local-only notes: purchased standard texts and excerpts, competitor observation notes,
+# real project files. Never committed (AGENTS.md §1).
+plan/

@@ -1,0 +1,36 @@
+[workspace]
+resolver = "3"
+members = ["crates/*", "apps/*", "xtask"]
+
+[workspace.package]
+version = "0.0.1"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+rust-version = "1.95"
+repository = "https://github.com/Erry91/luxpath"
+
+[workspace.dependencies]
+# internal (layer order: see docs/architecture.md and `cargo xtask layers`)
+luxpath-geom = { path = "crates/geom", version = "0.0.1" }
+luxpath-photometry = { path = "crates/photometry", version = "0.0.1" }
+luxpath-scene = { path = "crates/scene", version = "0.0.1" }
+luxpath-calc = { path = "crates/calc", version = "0.0.1" }
+luxpath-rules = { path = "crates/rules", version = "0.0.1" }
+luxpath-report = { path = "crates/report", version = "0.0.1" }
+# external
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "0.9"
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+
+# Never panic on input (AGENTS.md §3). These warn, and CI runs clippy with `-D warnings`.
+[workspace.lints.clippy]
+unwrap_used = "warn"
+expect_used = "warn"
+panic = "warn"
+todo = "warn"
+unimplemented = "warn"
+unreachable = "warn"
+indexing_slicing = "warn"

@@ -1,0 +1,15 @@
+[package]
+name = "luxpath-rules"
+description = "Standards checks (EN 1838 emergency lighting first) for luxpath"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+
+[dependencies]
+luxpath-scene.workspace = true
+luxpath-calc.workspace = true
+
+[lints]
+workspace = true

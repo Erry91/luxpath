@@ -1,0 +1,15 @@
+[package]
+name = "luxpath-calc"
+description = "Illuminance calculations for luxpath"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+
+[dependencies]
+luxpath-geom.workspace = true
+luxpath-photometry.workspace = true
+
+[lints]
+workspace = true

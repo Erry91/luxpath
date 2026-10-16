@@ -1,0 +1,20 @@
+[package]
+name = "luxpath-cli"
+description = "The luxpath command-line tool"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+
+[[bin]]
+name = "luxpath"
+path = "src/main.rs"
+
+[dependencies]
+luxpath-geom.workspace = true
+luxpath-photometry.workspace = true
+luxpath-calc.workspace = true
+
+[lints]
+workspace = true

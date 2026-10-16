@@ -1,0 +1,312 @@
+# luxpath feature checklist. Validated and summarised by `cargo xtask parity`.
+#
+# Status rules: `shipped` = usable today with at least one cited test (`evidence` = "path::test_name");
+# `partial` = part exists, `notes` says what is missing; `planned` = not started.
+# "Shipped" means "exists and tested", not "as good as DIALux". Never mark a feature shipped on a generic test.
+# The reference point is the published standards (docs/standards-parity.md) and, for workflow features, what free
+# closed tools offer (docs/research.md). Tiers: P0 = needed for the alpha gate, P1 = needed for beta, P2/P3 = later.
+
+[schema]
+version = 1
+statuses = ["planned", "partial", "shipped"]
+tiers = ["P0", "P1", "P2", "P3"]
+milestones = ["M0", "M1", "M2", "M3", "M4", "M5", "M6", "M7", "M8", "M9"]
+areas = { core = "geometry, conventions, robustness", photometry = "photometric data", calc = "calculation engine", scene = "scene model and file format", en1838 = "EN 1838 emergency lighting checks", report = "reports and output", cli = "command line", app = "desktop and web apps", interop = "import and export" }
+
+# ---------------------------------------------------------------------------------------------------------------
+# core
+# ---------------------------------------------------------------------------------------------------------------
+
+[[feature]]
+id = "core.geometry-conventions"
+title = "Shared geometry types and conventions (metres, z up, degrees in APIs)"
+area = "core"
+tier = "P0"
+milestone = "M0"
+status = "partial"
+evidence = ["crates/geom/src/lib.rs::normalized_vectors_have_unit_length", "crates/geom/src/lib.rs::degrees_wrap_into_the_half_open_range"]
+notes = "Vec3 and angle wrapping. Missing: 2D polygons, polylines with width, point-in-polygon, offsetting (needed by M3)."
+
+[[feature]]
+id = "core.fuzzing"
+title = "Property tests and fuzzing of every parser"
+area = "core"
+tier = "P1"
+milestone = "M1"
+status = "planned"
+
+# ---------------------------------------------------------------------------------------------------------------
+# photometry
+# ---------------------------------------------------------------------------------------------------------------
+
+[[feature]]
+id = "photometry.intensity-table"
+title = "C-γ intensity table with bilinear interpolation"
+area = "photometry"
+tier = "P0"
+milestone = "M0"
+status = "partial"
+evidence = ["crates/photometry/src/lib.rs::c_is_interpolated_and_wraps_back_to_c0", "crates/photometry/src/lib.rs::malformed_tables_are_rejected"]
+notes = "Full (expanded) tables only. Missing: symmetry expansion (C0, C0-C180, C90-C270, quadrant), A/B-type photometry."
+
+[[feature]]
+id = "photometry.ies-read"
+title = "Read IES LM-63 files (1995, 2002, 2019)"
+area = "photometry"
+tier = "P0"
+milestone = "M1"
+status = "planned"
+
+[[feature]]
+id = "photometry.ldt-read"
+title = "Read EULUMDAT (.ldt) files"
+area = "photometry"
+tier = "P0"
+milestone = "M1"
+status = "planned"
+
+[[feature]]
+id = "photometry.emergency-flux"
+title = "Emergency-mode flux (ballast lumen factor) separate from mains flux"
+area = "photometry"
+tier = "P0"
+milestone = "M1"
+status = "planned"
+
+[[feature]]
+id = "photometry.gldf-read"
+title = "Read GLDF containers (ISO 7127)"
+area = "photometry"
+tier = "P3"
+milestone = "M7"
+status = "planned"
+
+# ---------------------------------------------------------------------------------------------------------------
+# calc
+# ---------------------------------------------------------------------------------------------------------------
+
+[[feature]]
+id = "calc.direct-point"
+title = "Direct horizontal illuminance at a point (inverse-square cosine law)"
+area = "calc"
+tier = "P0"
+milestone = "M0"
+status = "partial"
+evidence = ["crates/calc/src/lib.rs::off_axis_points_follow_the_cosine_law", "crates/calc/src/lib.rs::rotation_selects_the_c_plane"]
+notes = "Downward-pointing luminaires rotated about z. Missing: tilted luminaires, vertical and inclined planes, obstruction."
+
+[[feature]]
+id = "calc.grids"
+title = "Calculation grids over areas and along routes, summed over all luminaires"
+area = "calc"
+tier = "P0"
+milestone = "M2"
+status = "planned"
+
+[[feature]]
+id = "calc.tilt"
+title = "Tilted and wall-mounted luminaires"
+area = "calc"
+tier = "P1"
+milestone = "M2"
+status = "planned"
+
+[[feature]]
+id = "calc.vertical-illuminance"
+title = "Vertical illuminance (e.g. at fire-fighting equipment)"
+area = "calc"
+tier = "P0"
+milestone = "M2"
+status = "planned"
+
+[[feature]]
+id = "calc.first-reflection"
+title = "Optional first reflection for indirect luminaires"
+area = "calc"
+tier = "P2"
+milestone = "M9"
+status = "planned"
+
+[[feature]]
+id = "calc.interreflection"
+title = "Full inter-reflection (radiosity) for general lighting"
+area = "calc"
+tier = "P3"
+milestone = "M9"
+status = "planned"
+
+# ---------------------------------------------------------------------------------------------------------------
+# scene
+# ---------------------------------------------------------------------------------------------------------------
+
+[[feature]]
+id = "scene.toml-format"
+title = "Human-readable, versioned TOML scene format"
+area = "scene"
+tier = "P0"
+milestone = "M3"
+status = "planned"
+
+[[feature]]
+id = "scene.escape-routes"
+title = "Escape routes as polylines with width"
+area = "scene"
+tier = "P0"
+milestone = "M3"
+status = "planned"
+
+[[feature]]
+id = "scene.areas"
+title = "Open (anti-panic) areas and high-risk task areas as polygons"
+area = "scene"
+tier = "P0"
+milestone = "M3"
+status = "planned"
+
+[[feature]]
+id = "scene.points-of-emphasis"
+title = "Points of emphasis (exits, direction and level changes, safety equipment)"
+area = "scene"
+tier = "P0"
+milestone = "M3"
+status = "planned"
+
+# ---------------------------------------------------------------------------------------------------------------
+# en1838 (values and clause numbers: docs/standards-parity.md)
+# ---------------------------------------------------------------------------------------------------------------
+
+[[feature]]
+id = "en1838.escape-route-full-width"
+title = "Escape routes: minimum illuminance over the full route width (2024 edition)"
+area = "en1838"
+tier = "P0"
+milestone = "M4"
+status = "planned"
+
+[[feature]]
+id = "en1838.escape-route-uniformity"
+title = "Escape routes: max/min uniformity ratio"
+area = "en1838"
+tier = "P0"
+milestone = "M4"
+status = "planned"
+
+[[feature]]
+id = "en1838.open-area"
+title = "Open (anti-panic) areas: minimum illuminance, border exclusion, uniformity"
+area = "en1838"
+tier = "P0"
+milestone = "M4"
+status = "planned"
+
+[[feature]]
+id = "en1838.high-risk"
+title = "High-risk task areas: illuminance relative to normal lighting, uniformity"
+area = "en1838"
+tier = "P1"
+milestone = "M4"
+status = "planned"
+
+[[feature]]
+id = "en1838.points-of-emphasis"
+title = "Points of emphasis and safety equipment checks"
+area = "en1838"
+tier = "P0"
+milestone = "M4"
+status = "planned"
+
+[[feature]]
+id = "en1838.glare-limits"
+title = "Disability glare: maximum intensity in the field of view by mounting height"
+area = "en1838"
+tier = "P0"
+milestone = "M4"
+status = "planned"
+
+[[feature]]
+id = "en1838.declarations"
+title = "Duration and response time recorded as declared inputs, shown in reports"
+area = "en1838"
+tier = "P1"
+milestone = "M4"
+status = "planned"
+
+[[feature]]
+id = "en1838.edition-2013"
+title = "Check against the withdrawn 2013 edition (centre line) for older projects"
+area = "en1838"
+tier = "P3"
+milestone = "M4"
+status = "planned"
+
+# ---------------------------------------------------------------------------------------------------------------
+# report
+# ---------------------------------------------------------------------------------------------------------------
+
+[[feature]]
+id = "report.text-json"
+title = "Text and JSON reports with pass/fail per requirement and evidence"
+area = "report"
+tier = "P0"
+milestone = "M5"
+status = "planned"
+
+[[feature]]
+id = "report.svg-plan"
+title = "SVG plan: false-colour illuminance, routes, luminaires, failing points"
+area = "report"
+tier = "P1"
+milestone = "M5"
+status = "planned"
+
+[[feature]]
+id = "report.pdf"
+title = "Printable PDF report"
+area = "report"
+tier = "P2"
+milestone = "M5"
+status = "planned"
+
+# ---------------------------------------------------------------------------------------------------------------
+# cli, app, interop
+# ---------------------------------------------------------------------------------------------------------------
+
+[[feature]]
+id = "cli.check"
+title = "`luxpath check scene.toml` with CI-friendly exit codes"
+area = "cli"
+tier = "P0"
+milestone = "M3"
+status = "planned"
+
+[[feature]]
+id = "app.wasm-calculator"
+title = "Embeddable web calculator (WASM) for a single route or area"
+area = "app"
+tier = "P1"
+milestone = "M8"
+status = "planned"
+
+[[feature]]
+id = "app.plan-editor"
+title = "Desktop/web plan editor: draw routes and areas, place luminaires, live results"
+area = "app"
+tier = "P2"
+milestone = "M8"
+status = "planned"
+
+[[feature]]
+id = "interop.dxf-import"
+title = "Import floor plans from DXF as an underlay and as room outlines"
+area = "interop"
+tier = "P1"
+milestone = "M7"
+status = "planned"
+
+[[feature]]
+id = "interop.auto-placement"
+title = "Suggest luminaire positions along routes and at points of emphasis"
+area = "interop"
+tier = "P2"
+milestone = "M7"
+status = "planned"

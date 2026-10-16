@@ -1,0 +1,15 @@
+[package]
+name = "luxpath-report"
+description = "Reports (text, JSON, SVG plans) for luxpath"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+
+[dependencies]
+luxpath-scene.workspace = true
+luxpath-rules.workspace = true
+
+[lints]
+workspace = true
