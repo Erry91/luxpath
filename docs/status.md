@@ -43,7 +43,7 @@ FireExit flags. Luminaires collapse into few types (410 → 5), so a photometry 
 - **A. Evidence:** inspect one real project IFC from a practising office (privately, in `plan/`).
 - **B. IFC scene:** read luminaire positions and space outlines (geometry) and define the mapping file
   (type name or product code → photometric file, emergency yes/no).
-- **E. Going public:** the repository side is ready; the owner's switches are in `docs/publishing.md`.
+- **E. Public** since 2026-10-22 (`docs/publishing.md`); crates.io waits for alpha.
 - **D. Real files:** photometric files of luminaires the owner's practice uses, privately in `plan/` (gap 12).
 
 ## Blockers
