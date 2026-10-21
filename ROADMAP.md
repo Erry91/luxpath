@@ -24,7 +24,7 @@ luxpath's one-page summary. Details live in:
 
 ## Next up
 
-1. **Obstruction by walls** (gap 16), then **M4:** the EN 1838:2024 checks (needs the standard's text, gap 4).
+1. **M4:** the EN 1838:2024 checks (needs the standard's text, gap 4).
 2. **Real photometric files** from the owner's practice, kept in `plan/` (gap 12).
 3. **Open question:** buy EN 1838:2024 (around €100 from a national standards body) to verify the requirement values.
 
@@ -32,6 +32,7 @@ luxpath's one-page summary. Details live in:
 
 | Date | Change |
 |---|---|
+| 2026-10-21 | Walls block light (gap 16): `[[wall]]` in scenes, sight lines tested against every wall piece; the corridor example's minimum drops from 1.45 to 0.60 lx once light no longer passes through its corner; 100 luminaires × 10,000 points × 36 walls in about 90 ms. |
 | 2026-10-21 | Publishing prepared (docs/publishing.md): history scanned clean, `cargo deny` with a CI job, SECURITY.md, CONTRIBUTING.md, issue templates (wrong result, bug), `publish = false` until a crates.io decision. |
 | 2026-10-21 | M3: scene format version 1 (docs/scene-format.md: photometry with emergency output, luminaires, routes, open and high-risk areas, points of emphasis; unknown fields refused, errors with line and column); `luxpath check` with exit codes 0/1/2/3, results per element with their assumptions, "cannot verify" when an emergency output is missing; three example scenes with synthetic photometry. |
 | 2026-10-21 | M2: luminaires with heading and tilt (IES tilt factors applied), illuminance on any surface, area and full-width route grids summed over luminaires, statistics that are unverifiable when any point is; isotropic and Lambertian cases within 1e-6; 100 luminaires × 10,000 points in about 55 ms (release, in `cargo xtask ci`); photometry plausibility warnings. |

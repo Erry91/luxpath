@@ -8,15 +8,17 @@
 //! ```
 //!
 //! where `I` is the luminaire's intensity towards the point (cd), `d` the distance (m) and `θ` the
-//! angle between the arriving light and `n` (light from behind the surface counts 0). Reflected
-//! light is not included: emergency-lighting tools leave it out by default (see `docs/research.md`),
-//! and inter-reflection is a later milestone (M9).
+//! angle between the arriving light and `n` (light from behind the surface counts 0). A luminaire
+//! whose line of sight to the point crosses a [`Wall`] contributes nothing there. Reflected light is
+//! not included: emergency-lighting tools leave it out by default (see `docs/research.md`), and
+//! inter-reflection is a later milestone (M9).
 //!
 //! - [`Luminaire`]: a placed, oriented (heading and tilt) distribution with its flux;
 //!   [`Luminaire::from_photometry`] applies the file's tilt factors.
 //! - [`Grid`]: points with one surface normal: over an area (a polygon, less a border), along a
 //!   route (its full width), or given one by one (vertical illuminance at equipment).
-//! - [`illuminance`] at every grid point, summed over luminaires; [`Stats`] (min, mean, max, the
+//! - [`illuminance`] at every grid point, summed over luminaires ([`illuminance_with_walls`] with
+//!   walls in the way); [`Stats`] (min, mean, max, the
 //!   uniformity ratios).
 //!
 //! An undefined result (a point at a luminaire's centre, a non-finite input) is `None` for that
@@ -30,6 +32,7 @@ mod stats;
 pub use grid::{Grid, GridError, MAX_GRID_POINTS};
 pub use stats::Stats;
 
+pub use luxpath_geom::Wall;
 use luxpath_geom::{Vec3, wrap_degrees};
 use luxpath_photometry::{IntensityTable, Photometry};
 
@@ -138,7 +141,7 @@ impl Frame {
 /// or an input is not finite. Light arriving from behind the surface gives 0 lux.
 pub fn direct_illuminance(luminaire: &Luminaire, point: Vec3, normal: Vec3) -> Option<f64> {
     let normal = normal.normalized()?;
-    direct(luminaire, &luminaire.frame()?, point, normal)
+    direct(luminaire, &luminaire.frame()?, point, normal, &[])
 }
 
 /// Direct illuminance (lux) on a horizontal surface facing up at `point`.
@@ -146,7 +149,7 @@ pub fn direct_horizontal_illuminance(luminaire: &Luminaire, point: Vec3) -> Opti
     direct_illuminance(luminaire, point, Vec3::UP)
 }
 
-fn direct(luminaire: &Luminaire, frame: &Frame, point: Vec3, unit_normal: Vec3) -> Option<f64> {
+fn direct(luminaire: &Luminaire, frame: &Frame, point: Vec3, unit_normal: Vec3, walls: &[Wall]) -> Option<f64> {
     if !point.is_finite() {
         return None;
     }
@@ -155,7 +158,7 @@ fn direct(luminaire: &Luminaire, frame: &Frame, point: Vec3, unit_normal: Vec3) 
     let dir = to_point.normalized()?;
     // The light travels along `dir`; it lights the surface when it arrives against the normal.
     let cos_theta = -dir.dot(unit_normal);
-    if cos_theta <= 0.0 {
+    if cos_theta <= 0.0 || walls.iter().any(|w| w.blocks(luminaire.position, point)) {
         return Some(0.0);
     }
     let local = frame.to_local(dir);
@@ -169,13 +172,18 @@ fn direct(luminaire: &Luminaire, frame: &Frame, point: Vec3, unit_normal: Vec3) 
 /// Illuminance (lux) at every point of `grid`, summed over `luminaires`; `None` at a point where
 /// any luminaire's contribution is undefined.
 pub fn illuminance(luminaires: &[Luminaire], grid: &Grid) -> Vec<Option<f64>> {
+    illuminance_with_walls(luminaires, &[], grid)
+}
+
+/// [`illuminance`] with `walls` blocking the light that would cross them.
+pub fn illuminance_with_walls(luminaires: &[Luminaire], walls: &[Wall], grid: &Grid) -> Vec<Option<f64>> {
     let mut sums: Vec<Option<f64>> = vec![Some(0.0); grid.points().len()];
     let Some(normal) = grid.normal().normalized() else { return vec![None; grid.points().len()] };
     for luminaire in luminaires {
         let Some(frame) = luminaire.frame() else { return vec![None; grid.points().len()] };
         for (sum, point) in sums.iter_mut().zip(grid.points()) {
             if let Some(total) = sum {
-                *sum = direct(luminaire, &frame, *point, normal).map(|e| *total + e);
+                *sum = direct(luminaire, &frame, *point, normal, walls).map(|e| *total + e);
             }
         }
     }

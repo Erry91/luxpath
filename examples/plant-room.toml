@@ -36,6 +36,18 @@ id = "C1"
 photometry = "bulkhead"
 position = [3.5, 4.0, 3.0]
 
+# The room's walls, 7 m × 6 m, with the door to the corridor (1 m) in the west wall; a 1.5 m-high
+# switchboard cabinet stands along the north edge of the working area.
+[[wall]]
+id = "W-room"
+path = [[0, 3.5], [0, 0], [7, 0], [7, 6], [0, 6], [0, 4.5]]
+height_m = 3.2
+
+[[wall]]
+id = "W-cabinet"
+path = [[1, 2.2], [6, 2.2]]
+height_m = 1.5
+
 [[area]]
 id = "H1"
 name = "Switchboard working area"

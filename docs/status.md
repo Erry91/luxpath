@@ -5,6 +5,12 @@
 **Milestone:** M3 done (scene and `luxpath check`); M1–M2 done (photometry readers, engine). **Direction under study:** EN 1838 checks on IFC models
 (docs/research.md §6–7). The IFC inspector (`luxpath inspect-ifc`, an early piece of M7) is done.
 
+## Walls (2026-10-21)
+Scenes have `[[wall]]`s (polylines with a height); a luminaire whose sight line to a point crosses one gives that
+point nothing. In the corridor example the minimum on the route drops from 1.45 lx to 0.60 lx once light no longer
+passes through the corner: the wrong pass gap 16 warned about. Next: Ashlar's emergency-lighting plugin (R2.9a)
+builds scenes from BIM models with this engine.
+
 ## M3 (2026-10-21)
 Scenes are TOML files, version 1 (`docs/scene-format.md`): photometric files with their emergency output,
 luminaires (heading, tilt), escape routes, open and high-risk areas, points of emphasis, calculation settings.
@@ -37,12 +43,11 @@ FireExit flags. Luminaires collapse into few types (410 → 5), so a photometry 
 - **A. Evidence:** inspect one real project IFC from a practising office (privately, in `plan/`).
 - **B. IFC scene:** read luminaire positions and space outlines (geometry) and define the mapping file
   (type name or product code → photometric file, emergency yes/no).
-- **C. Obstruction** (gap 16): walls in the scene block light; an alpha blocker before M4's checks.
 - **E. Going public:** the repository side is ready; the owner's switches are in `docs/publishing.md`.
 - **D. Real files:** photometric files of luminaires the owner's practice uses, privately in `plan/` (gap 12).
 
 ## Blockers
-- None for obstruction. **Before M4:** the EN 1838:2024 text (Italian edition UNI EN 1838:2025) is needed to verify values (gap 4).
+- None. **Before M4:** the EN 1838:2024 text (Italian edition UNI EN 1838:2025) is needed to verify values (gap 4).
 
 ## Open questions (owner)
 - Practitioner questions in `docs/research.md` §5.

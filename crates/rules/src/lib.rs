@@ -15,7 +15,7 @@
 //!
 //! Layer L4: depends on `luxpath-scene` and `luxpath-calc`.
 
-use luxpath_calc::{Grid, Luminaire, Stats, illuminance};
+use luxpath_calc::{Grid, Luminaire, Stats, illuminance_with_walls};
 use luxpath_geom::Vec3;
 use luxpath_photometry::Photometry;
 use luxpath_scene::{AreaKind, PointKind, Scene};
@@ -81,8 +81,16 @@ pub fn evaluate(scene: &Scene, photometry: &[Photometry]) -> Result<Evaluation, 
     let calc = scene.calculation;
     let mut assumptions = vec![
         "direct light only: no reflections from walls, floor or ceiling".to_string(),
-        "luminaires are points, and nothing blocks their light (walls between a luminaire and a point are ignored)"
-            .to_string(),
+        "luminaires are points".to_string(),
+        if scene.walls.is_empty() {
+            "nothing blocks the light: the scene has no walls".to_string()
+        } else {
+            let n = scene.walls.len();
+            format!(
+                "walls block the light ({n} straight piece{}); furniture, doors and other obstacles do not",
+                if n == 1 { "" } else { "s" }
+            )
+        },
         format!("maintenance factor {}", scene.maintenance_factor),
         format!(
             "grids every {} m; {} points across each route's full width; open areas less a {} m border",
@@ -146,7 +154,7 @@ pub fn evaluate(scene: &Scene, photometry: &[Photometry]) -> Result<Evaluation, 
         }
         match grid {
             Err(e) => Outcome::CannotVerify(e.to_string()),
-            Ok(grid) => match Stats::of(&illuminance(&luminaires, &grid)) {
+            Ok(grid) => match Stats::of(&illuminance_with_walls(&luminaires, &scene.walls, &grid)) {
                 Some(stats) => Outcome::Computed(stats),
                 None => Outcome::CannotVerify("a grid point is at a luminaire's centre".into()),
             },
