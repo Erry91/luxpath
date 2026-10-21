@@ -38,7 +38,7 @@ FireExit flags. Luminaires collapse into few types (410 → 5), so a photometry 
 - **B. IFC scene:** read luminaire positions and space outlines (geometry) and define the mapping file
   (type name or product code → photometric file, emergency yes/no).
 - **C. Obstruction** (gap 16): walls in the scene block light; an alpha blocker before M4's checks.
-- **E. Going public:** the publishing checklist (`docs/publishing.md`).
+- **E. Going public:** the repository side is ready; the owner's switches are in `docs/publishing.md`.
 - **D. Real files:** photometric files of luminaires the owner's practice uses, privately in `plan/` (gap 12).
 
 ## Blockers

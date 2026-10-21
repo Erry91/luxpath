@@ -32,6 +32,7 @@ luxpath's one-page summary. Details live in:
 
 | Date | Change |
 |---|---|
+| 2026-10-21 | Publishing prepared (docs/publishing.md): history scanned clean, `cargo deny` with a CI job, SECURITY.md, CONTRIBUTING.md, issue templates (wrong result, bug), `publish = false` until a crates.io decision. |
 | 2026-10-21 | M3: scene format version 1 (docs/scene-format.md: photometry with emergency output, luminaires, routes, open and high-risk areas, points of emphasis; unknown fields refused, errors with line and column); `luxpath check` with exit codes 0/1/2/3, results per element with their assumptions, "cannot verify" when an emergency output is missing; three example scenes with synthetic photometry. |
 | 2026-10-21 | M2: luminaires with heading and tilt (IES tilt factors applied), illuminance on any surface, area and full-width route grids summed over luminaires, statistics that are unverifiable when any point is; isotropic and Lambertian cases within 1e-6; 100 luminaires × 10,000 points in about 55 ms (release, in `cargo xtask ci`); photometry plausibility warnings. |
 | 2026-10-21 | M1: IES LM-63 (1986–2019) and EULUMDAT readers, symmetry expansion, tilt data, emergency flux, located errors, property tests, a 10-minute fuzz run (22.8 million inputs) without a panic; `luxpath photometry`. Existing crates evaluated first: none usable (docs/architecture.md). |

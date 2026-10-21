@@ -44,7 +44,7 @@ iterating: `cargo test -p luxpath-calc`.
 ## Commits and PRs
 `main` is the integration branch. Branch as `<type>/<slug>` (`feat/`, `fix/`, `docs/`, `chore/`, `refactor/`), one
 task id per commit (e.g. `M1.2: EULUMDAT reader`), commit only green states, open a PR using
-`.github/pull_request_template.md`, merge when CI is green.
+`.github/pull_request_template.md`, merge when CI is green. `cargo deny check` for dependency changes.
 
 ## Running
 - `cargo run -p luxpath-cli -- --help`

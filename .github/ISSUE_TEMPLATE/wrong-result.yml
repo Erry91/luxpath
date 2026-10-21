@@ -1,0 +1,29 @@
+name: Wrong result
+description: luxpath computed a value or a verdict you believe is wrong. These are treated as the most serious bugs.
+labels: ["wrong-result"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please do not attach manufacturers' photometric files or real building plans unless you are free to share
+        them. A synthetic scene or file that shows the problem is ideal.
+  - type: textarea
+    id: what
+    attributes:
+      label: What luxpath reported, and what you expected
+      description: The values (lux, ratios, verdicts) and, if you compared with another tool, which one and its version.
+    validations:
+      required: true
+  - type: textarea
+    id: input
+    attributes:
+      label: How to reproduce
+      description: The scene (TOML) and the command; or a description of the luminaire and the geometry.
+      render: toml
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: luxpath version or commit
+      description: "`luxpath --version`, or the commit you built"

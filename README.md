@@ -40,9 +40,11 @@ cargo xtask parity                           # feature progress by milestone
 | [docs/gaps.md](docs/gaps.md) | Every known shortfall, ranked: the work list |
 | [docs/status.md](docs/status.md) | Where work stands right now, blockers, open questions |
 | [docs/architecture.md](docs/architecture.md) | Crates, layers, data flow, design decisions |
+| [docs/scene-format.md](docs/scene-format.md) | The scene file format that `luxpath check` reads |
 | [docs/standards-parity.md](docs/standards-parity.md) | EN 1838:2024 requirements and their implementation status |
 | [docs/research.md](docs/research.md) | Market and standards research behind the project |
 | [parity/features.toml](parity/features.toml) | Machine-readable feature checklist (`cargo xtask parity`) |
+| [CONTRIBUTING.md](CONTRIBUTING.md) / [SECURITY.md](SECURITY.md) | How to help, and how to report wrong results and vulnerabilities |
 | [AGENTS.md](AGENTS.md) / [CLAUDE.md](CLAUDE.md) | Rules and working instructions for contributors and agents |
 
 ## Disclaimer

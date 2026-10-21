@@ -8,6 +8,8 @@ edition = "2024"
 license = "MIT OR Apache-2.0"
 rust-version = "1.95"
 repository = "https://github.com/Erry91/luxpath"
+# Nothing is published to crates.io until the owner decides (docs/publishing.md).
+publish = false
 
 [workspace.dependencies]
 # internal (layer order: see docs/architecture.md and `cargo xtask layers`)

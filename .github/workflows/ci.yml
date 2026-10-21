@@ -30,3 +30,10 @@ jobs:
           targets: wasm32-unknown-unknown
       - uses: Swatinem/rust-cache@v2
       - run: cargo xtask ci
+
+  licences:
+    name: licences and advisories (cargo deny)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: EmbarkStudios/cargo-deny-action@v2
