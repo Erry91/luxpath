@@ -18,7 +18,7 @@
 use luxpath_calc::{Grid, Luminaire, Stats, illuminance_with_walls};
 use luxpath_geom::Vec3;
 use luxpath_photometry::Photometry;
-use luxpath_scene::{AreaKind, PointKind, Scene};
+use luxpath_scene::{AreaKind, PointKind, RouteShape, Scene};
 
 /// What one element's illuminance came to.
 #[derive(Debug, Clone, PartialEq)]
@@ -167,7 +167,12 @@ pub fn evaluate(scene: &Scene, photometry: &[Photometry]) -> Result<Evaluation, 
             id: r.id.clone(),
             name: r.name.clone(),
             kind: ElementKind::Route,
-            horizontal: outcome(Grid::route(&r.path, r.width_m, r.floor_m, calc.spacing_m, calc.route_points_across)),
+            horizontal: outcome(match &r.shape {
+                RouteShape::Centre { path, width_m } => {
+                    Grid::route(path, *width_m, r.floor_m, calc.spacing_m, calc.route_points_across)
+                }
+                RouteShape::Outline(outline) => Grid::area(outline, r.floor_m, calc.spacing_m, 0.0),
+            }),
             vertical: None,
         });
     }

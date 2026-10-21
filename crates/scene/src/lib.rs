@@ -142,8 +142,9 @@ struct RouteFile {
     id: Spanned<String>,
     #[serde(default)]
     name: String,
-    path: Spanned<Vec<[f64; 2]>>,
-    width_m: Spanned<f64>,
+    path: Option<Spanned<Vec<[f64; 2]>>>,
+    width_m: Option<Spanned<f64>>,
+    outline: Option<Spanned<Vec<[f64; 2]>>>,
     #[serde(default)]
     floor_m: f64,
 }
@@ -196,12 +197,20 @@ pub struct PlacedLuminaire {
     pub tilt_deg: f64,
 }
 
+/// Where an escape route runs.
+#[derive(Debug, Clone, PartialEq)]
+pub enum RouteShape {
+    /// A centre line and the route's full width.
+    Centre { path: Vec<Vec2>, width_m: f64 },
+    /// The route's floor as a polygon (a corridor as a BIM model draws it), computed over all of it.
+    Outline(Vec<Vec2>),
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct Route {
     pub id: String,
     pub name: String,
-    pub path: Vec<Vec2>,
-    pub width_m: f64,
+    pub shape: RouteShape,
     /// The floor's height, in metres.
     pub floor_m: f64,
 }
@@ -464,13 +473,20 @@ impl Scene {
             if !r.floor_m.is_finite() {
                 return Err(c.err(r.id.span(), "the floor height must be a finite number"));
             }
-            routes.push(Route {
-                id: r.id.get_ref().clone(),
-                name: r.name.clone(),
-                path: c.point2(&r.path, 2, "a route's path")?,
-                width_m: c.positive(&r.width_m, "the route width")?,
-                floor_m: r.floor_m,
-            });
+            let shape = match (&r.path, &r.width_m, &r.outline) {
+                (Some(path), Some(width), None) => RouteShape::Centre {
+                    path: c.point2(path, 2, "a route's path")?,
+                    width_m: c.positive(width, "the route width")?,
+                },
+                (None, None, Some(outline)) => RouteShape::Outline(c.point2(outline, 3, "a route's outline")?),
+                _ => {
+                    return Err(c.err(
+                        r.id.span(),
+                        "give a route either `path` and `width_m` (its centre line) or `outline` (its floor)",
+                    ));
+                }
+            };
+            routes.push(Route { id: r.id.get_ref().clone(), name: r.name.clone(), shape, floor_m: r.floor_m });
         }
 
         let mut areas = Vec::new();
