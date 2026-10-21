@@ -32,6 +32,7 @@ luxpath's one-page summary. Details live in:
 
 | Date | Change |
 |---|---|
+| 2026-10-21 | Routes can be given as their floor outline (BIM models draw corridors as rooms), for Ashlar's emergency-lighting plugin (R2.9a). |
 | 2026-10-21 | Walls block light (gap 16): `[[wall]]` in scenes, sight lines tested against every wall piece; the corridor example's minimum drops from 1.45 to 0.60 lx once light no longer passes through its corner; 100 luminaires × 10,000 points × 36 walls in about 90 ms. |
 | 2026-10-21 | Publishing prepared (docs/publishing.md): history scanned clean, `cargo deny` with a CI job, SECURITY.md, CONTRIBUTING.md, issue templates (wrong result, bug), `publish = false` until a crates.io decision. |
 | 2026-10-21 | M3: scene format version 1 (docs/scene-format.md: photometry with emergency output, luminaires, routes, open and high-risk areas, points of emphasis; unknown fields refused, errors with line and column); `luxpath check` with exit codes 0/1/2/3, results per element with their assumptions, "cannot verify" when an emergency output is missing; three example scenes with synthetic photometry. |

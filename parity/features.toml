@@ -179,7 +179,7 @@ tier = "P0"
 milestone = "M3"
 status = "shipped"
 evidence = ["crates/scene/src/tests.rs::a_scene_reads_into_its_model", "crates/rules/src/tests.rs::routes_and_points_are_computed_in_emergency_mode"]
-notes = "Centre polylines with a width, computed over the full width. Missing: routes through open areas (EN 1838:2024's procedure, M4), stairs as sloped routes."
+notes = "Centre polylines with a width, computed over the full width, or the route's floor as a polygon (from BIM models). Missing: routes through open areas (EN 1838:2024's procedure, M4), stairs as sloped routes."
 
 [[feature]]
 id = "scene.areas"

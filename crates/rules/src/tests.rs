@@ -91,6 +91,19 @@ fn a_wall_between_luminaire_and_point_darkens_it() {
 }
 
 #[test]
+fn a_route_given_as_its_floor_is_computed_over_all_of_it() {
+    // A 2 m × 1 m corridor floor at 1 m spacing: cell centres (0.5, 0.5) and (1.5, 0.5).
+    // From 400 cd at (0, 0, 2): E = 400 · 2 / d³ with d² = 0.5 + 4 and 2.5 + 4.
+    let route = "[[route]]\nid = \"R2\"\noutline = [[0, 0], [2, 0], [2, 1], [0, 1]]\n";
+    let e = evaluate(&scene_with("emergency = { flux_lm = 500 }", route), &[isotropic()]).unwrap();
+    let r2 = e.results.iter().find(|r| r.id == "R2").unwrap();
+    let s = computed(&r2.horizontal);
+    assert_eq!(s.points, 2);
+    assert!((s.max_lx - 800.0 / 4.5f64.powf(1.5)).abs() < 1e-9);
+    assert!((s.min_lx - 800.0 / 6.5f64.powf(1.5)).abs() < 1e-9);
+}
+
+#[test]
 fn photometry_must_match_the_scene() {
     assert!(evaluate(&scene(""), &[]).is_err());
 }

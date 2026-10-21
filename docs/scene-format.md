@@ -1,6 +1,6 @@
 # Scene format, version 1
 
-> **Last updated:** 2026-10-21 · **Change:** walls (version 1, an addition older scenes need not use)
+> **Last updated:** 2026-10-21 · **Change:** walls, and routes as outlines (version 1 additions older scenes need not use)
 
 A scene describes what is lit and with what: a TOML file a person can read, review and diff. `luxpath check
 scene.toml` evaluates it. Examples: `examples/*.toml`.
@@ -83,6 +83,15 @@ floor_m = 0.0                 # optional (default 0)
 ```
 
 Illuminance is computed on the floor over the route's **full width** (`route_points_across` points across).
+
+A route can instead be given as its floor, as BIM models draw corridors; it is then computed over all of it, at the
+grid spacing, with no border:
+
+```toml
+[[route]]
+id = "R2"
+outline = [[0, 0], [16, 0], [16, 2], [0, 2]]
+```
 
 ## Areas
 

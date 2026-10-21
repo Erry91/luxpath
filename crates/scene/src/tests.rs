@@ -58,7 +58,7 @@ fn a_scene_reads_into_its_model() {
     assert_eq!(s.photometry[1].emergency, None);
     assert_eq!(s.luminaires[0].photometry, 0);
     assert_eq!(s.luminaires[0].rotation_deg, 90.0);
-    assert_eq!(s.routes[0].path.len(), 3);
+    assert!(matches!(&s.routes[0].shape, RouteShape::Centre { path, width_m } if path.len() == 3 && *width_m == 2.0));
     // One wall path of two pieces, from the floor to 3 m.
     assert_eq!(s.walls.len(), 2);
     assert_eq!((s.walls[1].a, s.walls[1].b, s.walls[1].top_m), (Vec2::new(10.0, 0.0), Vec2::new(10.0, 5.0), 3.0));
@@ -87,6 +87,7 @@ fn malformed_scenes_give_located_errors() {
         (with("id = \"R1\"", "id = \"L1\""), 32, "used twice"),
         (with("path = [[0, 1], [10, 1], [10, 6]]", "path = [[0, 1]]"), 34, "at least 2 points"),
         (with("width_m = 2.0", "width_m = -2.0"), 35, "above 0"),
+        (with("width_m = 2.0", "outline = [[0, 0], [1, 0], [1, 1]]"), 32, "either `path` and `width_m`"),
         (with("kind = \"high-risk\"", "kind = \"stairs\""), 39, "not an area kind"),
         (with("kind = \"high-risk\"", "kind = \"open\""), 41, "high-risk areas only"),
         (with("kind = \"fire-fighting\"", "kind = \"extinguisher\""), 45, "not a point kind"),
@@ -104,6 +105,16 @@ fn malformed_scenes_give_located_errors() {
         assert!(e.column > 0, "{e}");
         assert!(e.to_string().contains(words), "{e} should mention {words}");
     }
+}
+
+#[test]
+fn a_route_can_be_its_floor_outline() {
+    let s = Scene::parse(&with(
+        "path = [[0, 1], [10, 1], [10, 6]]\nwidth_m = 2.0",
+        "outline = [[0, 0], [10, 0], [10, 2], [0, 2]]",
+    ))
+    .unwrap();
+    assert!(matches!(&s.routes[0].shape, RouteShape::Outline(o) if o.len() == 4));
 }
 
 #[test]
