@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/Erry91/luxpath/security/advisories/new
+    about: Report a vulnerability privately (crafted files that crash, hang or exploit luxpath).

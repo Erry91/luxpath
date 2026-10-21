@@ -1,0 +1,20 @@
+name: Bug
+description: A crash, an error on a file that should read, or anything else that does not work.
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: The command, its output, and what you expected.
+    validations:
+      required: true
+  - type: textarea
+    id: file
+    attributes:
+      label: The input
+      description: A synthetic file or scene that reproduces it (never a file you are not free to share).
+  - type: input
+    id: version
+    attributes:
+      label: luxpath version or commit
