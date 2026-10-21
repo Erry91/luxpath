@@ -1,6 +1,6 @@
 # Gaps: what luxpath cannot do yet
 
-> **Last updated:** 2026-10-21 · **Change:** M2 closed rows 3, 8, 9 and 13; added row 16
+> **Last updated:** 2026-10-21 · **Change:** M3 closed row 5
 
 Every known shortfall, ranked by user impact. This is the work list: pick from the top, and remove or update a row
 in the same PR that closes it. **[alpha blocker]** rows fail the alpha gate (ROADMAP.md).
@@ -8,7 +8,6 @@ in the same PR that closes it. **[alpha blocker]** rows fail the alpha gate (ROA
 | # | Gap | Why it ranks here | Milestone | Est. h |
 |---|---|---|---|---|
 | 4 | **[alpha blocker]** Requirement values not verified against EN 1838:2024 text | Values in `standards-parity.md` come from secondary sources | M4 | 3 + buying the standard |
-| 5 | **[alpha blocker]** No scene format or `check` command | Users can't describe a floor | M3 | 15–20 |
 | 6 | **[alpha blocker]** No EN 1838 checks | The project's purpose | M4 | 25–40 |
 | 7 | **[alpha blocker]** No independent validation | Trust: nobody should rely on unvalidated numbers | M6 | 10–20 + human |
 | 16 | **[alpha blocker]** Luminaires are points; no obstruction | A wrong pass: direct light from a point ignores the luminaire's size (fine beyond about five times its size) and walls between it and the floor; a corridor around a corner reads lit when it is not | M4 | 6–10 |

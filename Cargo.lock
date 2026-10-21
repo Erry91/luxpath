@@ -224,6 +224,9 @@ dependencies = [
  "luxpath-geom",
  "luxpath-ifc",
  "luxpath-photometry",
+ "luxpath-report",
+ "luxpath-rules",
+ "luxpath-scene",
  "serde_json",
 ]
 
@@ -260,6 +263,8 @@ name = "luxpath-rules"
 version = "0.0.1"
 dependencies = [
  "luxpath-calc",
+ "luxpath-geom",
+ "luxpath-photometry",
  "luxpath-scene",
 ]
 
@@ -269,6 +274,8 @@ version = "0.0.1"
 dependencies = [
  "luxpath-geom",
  "luxpath-photometry",
+ "serde",
+ "toml",
 ]
 
 [[package]]

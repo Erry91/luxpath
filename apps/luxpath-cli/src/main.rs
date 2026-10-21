@@ -1,8 +1,11 @@
 //! `luxpath`: the command-line tool.
 //!
 //! Commands: `point` (direct illuminance under an isotropic source, a demonstration),
-//! `photometry` (what a photometric file says, as luxpath reads it) and `inspect-ifc` (what an IFC
-//! model contains for an emergency-lighting check). `luxpath check scene.toml` is M3–M4.
+//! `photometry` (what a photometric file says, as luxpath reads it), `check` (a scene's emergency
+//! lighting) and `inspect-ifc` (what an IFC model contains for an emergency-lighting check).
+//!
+//! `check` exits with 0 (every requirement passes), 1 (one fails), 2 (the input cannot be read) or
+//! 3 (cannot verify: data missing, or, until M4, no requirement checked yet).
 
 use std::process::ExitCode;
 
@@ -16,6 +19,9 @@ luxpath — open emergency-lighting calculations
 USAGE:
     luxpath point <mounting height m> <horizontal offset m> [flux lm]
         Direct illuminance on the floor from an isotropic 1000 cd/klm source (demonstration).
+    luxpath check <scene.toml>
+        Emergency lighting of a scene: illuminance on every escape route, area and point.
+        Exit codes: 0 pass, 1 fail, 2 input error, 3 cannot verify.
     luxpath photometry <file.ies|file.ldt>
         What a photometric file says, as luxpath reads it: flux, symmetry, peak, light output ratio.
     luxpath inspect-ifc <model.ifc> [--json]
@@ -40,6 +46,16 @@ fn main() -> ExitCode {
             Ok(lux) => {
                 println!("{lux:.2} lx");
                 ExitCode::SUCCESS
+            }
+            Err(message) => {
+                eprintln!("error: {message}");
+                ExitCode::from(2)
+            }
+        },
+        Some("check") => match check(args.get(1..).unwrap_or_default()) {
+            Ok((text, code)) => {
+                print!("{text}");
+                ExitCode::from(code)
             }
             Err(message) => {
                 eprintln!("error: {message}");
@@ -92,13 +108,40 @@ fn inspect_ifc(args: &[String]) -> Result<String, String> {
     }
 }
 
+/// Reads a file of at most `limit` bytes.
+fn read_limited(path: &std::path::Path, limit: usize) -> Result<Vec<u8>, String> {
+    let shown = path.display();
+    let size = std::fs::metadata(path).map_err(|e| format!("{shown}: {e}"))?.len();
+    if size > limit as u64 {
+        return Err(format!("{shown}: {size} bytes is more than the {limit}-byte limit"));
+    }
+    std::fs::read(path).map_err(|e| format!("{shown}: {e}"))
+}
+
+fn check(args: &[String]) -> Result<(String, u8), String> {
+    let path = std::path::Path::new(args.first().ok_or("missing the scene file path")?);
+    let bytes = read_limited(path, luxpath_scene::MAX_SCENE_BYTES)?;
+    let text = String::from_utf8(bytes).map_err(|_| format!("{}: not UTF-8 text", path.display()))?;
+    let scene = luxpath_scene::Scene::parse(&text).map_err(|e| format!("{}: {e}", path.display()))?;
+    let dir = path.parent().unwrap_or(std::path::Path::new("."));
+    let mut photometry = Vec::new();
+    for reference in &scene.photometry {
+        let file = dir.join(&reference.file);
+        let bytes = read_limited(&file, MAX_FILE_BYTES)?;
+        photometry.push(luxpath_photometry::read(&bytes).map_err(|e| format!("{}: {e}", file.display()))?);
+    }
+    let evaluation = luxpath_rules::evaluate(&scene, &photometry)?;
+    let code = match evaluation.verdict {
+        luxpath_rules::Verdict::Pass => 0,
+        luxpath_rules::Verdict::Fail => 1,
+        luxpath_rules::Verdict::CannotVerify => 3,
+    };
+    Ok((luxpath_report::text(&scene, &evaluation), code))
+}
+
 fn photometry(args: &[String]) -> Result<String, String> {
     let path = args.first().ok_or("missing the photometric file path")?;
-    let size = std::fs::metadata(path).map_err(|e| format!("{path}: {e}"))?.len();
-    if size > MAX_FILE_BYTES as u64 {
-        return Err(format!("{path}: {size} bytes is more than the {MAX_FILE_BYTES}-byte limit"));
-    }
-    let bytes = std::fs::read(path).map_err(|e| format!("{path}: {e}"))?;
+    let bytes = read_limited(std::path::Path::new(path), MAX_FILE_BYTES)?;
     let p = luxpath_photometry::read(&bytes).map_err(|e| format!("{path}: {e}"))?;
     Ok(describe(&p))
 }

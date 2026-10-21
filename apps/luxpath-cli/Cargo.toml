@@ -16,6 +16,9 @@ luxpath-geom.workspace = true
 luxpath-photometry.workspace = true
 luxpath-calc.workspace = true
 luxpath-ifc.workspace = true
+luxpath-scene.workspace = true
+luxpath-rules.workspace = true
+luxpath-report.workspace = true
 serde_json.workspace = true
 
 [lints]

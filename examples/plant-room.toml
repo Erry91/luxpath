@@ -1,0 +1,56 @@
+# A plant room with a high-risk task area at a switchboard, lit by wall-mounted luminaires, and stairs down;
+# synthetic. Run: cargo run -p luxpath-cli -- check examples/plant-room.toml
+format = "luxpath-scene"
+version = 1
+
+[project]
+name = "Example: plant room"
+maintenance_factor = 0.8
+
+[calculation]
+spacing_m = 0.25
+
+[[photometry]]
+id = "bulkhead"
+file = "photometry/bulkhead.ldt"
+# Measured in emergency mode already: the full rated flux.
+emergency = { ballast_lumen_factor = 1.0 }
+
+# On the south wall at 2.4 m, aimed into the room (tilted 60°, C0 turned to face north).
+[[luminaire]]
+id = "W1"
+photometry = "bulkhead"
+position = [2.0, 0.1, 2.4]
+rotation_deg = 90
+tilt_deg = 60
+
+[[luminaire]]
+id = "W2"
+photometry = "bulkhead"
+position = [5.0, 0.1, 2.4]
+rotation_deg = 90
+tilt_deg = 60
+
+[[luminaire]]
+id = "C1"
+photometry = "bulkhead"
+position = [3.5, 4.0, 3.0]
+
+[[area]]
+id = "H1"
+name = "Switchboard working area"
+kind = "high-risk"
+outline = [[1, 0.5], [6, 0.5], [6, 2], [1, 2]]
+normal_lighting_lx = 300
+
+[[point]]
+id = "S1"
+name = "Stairs down"
+kind = "level-change"
+position = [6.5, 5.0, 0.0]
+
+[[point]]
+id = "E1"
+name = "Door to corridor"
+kind = "exit"
+position = [0.0, 4.0, 0.0]

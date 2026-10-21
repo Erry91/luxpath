@@ -1,0 +1,71 @@
+# An open-plan office of 15 m × 10 m (an open, anti-panic area) with a route through it; synthetic.
+# Run: cargo run -p luxpath-cli -- check examples/open-office.toml
+format = "luxpath-scene"
+version = 1
+
+[project]
+name = "Example: open-plan office"
+maintenance_factor = 0.8
+
+[calculation]
+spacing_m = 0.5
+
+[[photometry]]
+id = "bulkhead"
+file = "photometry/bulkhead.ldt"
+emergency = { flux_lm = 200 }
+
+[[luminaire]]
+id = "L1"
+photometry = "bulkhead"
+position = [2.5, 2.5, 3.0]
+
+[[luminaire]]
+id = "L2"
+photometry = "bulkhead"
+position = [7.5, 2.5, 3.0]
+
+[[luminaire]]
+id = "L3"
+photometry = "bulkhead"
+position = [12.5, 2.5, 3.0]
+
+[[luminaire]]
+id = "L4"
+photometry = "bulkhead"
+position = [2.5, 7.5, 3.0]
+
+[[luminaire]]
+id = "L5"
+photometry = "bulkhead"
+position = [7.5, 7.5, 3.0]
+
+[[luminaire]]
+id = "L6"
+photometry = "bulkhead"
+position = [12.5, 7.5, 3.0]
+
+[[area]]
+id = "A1"
+name = "Open office"
+kind = "open"
+outline = [[0, 0], [15, 0], [15, 10], [0, 10]]
+
+[[route]]
+id = "R1"
+name = "Aisle to exit B"
+path = [[0, 5], [15, 5]]
+width_m = 1.2
+
+[[point]]
+id = "E1"
+name = "Exit B"
+kind = "exit"
+position = [15.0, 5.0, 0.0]
+
+[[point]]
+id = "C1"
+name = "Manual call point"
+kind = "call-point"
+position = [14.95, 3.0, 1.4]
+facing = [-1, 0, 0]

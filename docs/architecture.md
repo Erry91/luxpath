@@ -23,12 +23,12 @@ new crate isn't listed in `xtask/src/layers.rs`.
 
 | Layer | Crate | Responsibility |
 |---|---|---|
-| L0 | `luxpath-geom` | Vectors, angles, later 2D polygons and routes. Conventions: metres, z up, degrees in APIs |
+| L0 | `luxpath-geom` | Vectors, angles, plan polygons. Conventions: metres, z up, degrees in APIs |
 | L1 | `luxpath-photometry` | C-γ intensity tables (cd/klm), IES and EULUMDAT readers, symmetry expansion |
 | L2 | `luxpath-scene` | Rooms, routes, areas, points of emphasis, placed luminaires; the TOML format |
 | L3 | `luxpath-calc` | Direct illuminance at points and over grids; statistics |
 | L3 | `luxpath-ifc` | Reads IFC (BIM) models through `ifc-lite-core`; today the inspector, later scenes built from models |
-| L4 | `luxpath-rules` | Standards checks: findings with clause, measured value, threshold, verdict |
+| L4 | `luxpath-rules` | Evaluates a scene (results per element, assumptions); from M4 standards checks with clause, value, threshold, verdict |
 | L5 | `luxpath-report` | Text, JSON, SVG (later PDF) output |
 | L9 | `luxpath-cli`, `xtask` | Applications and tooling; only these may do I/O or use UI crates |
 

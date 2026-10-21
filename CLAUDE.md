@@ -48,6 +48,7 @@ task id per commit (e.g. `M1.2: EULUMDAT reader`), commit only green states, ope
 
 ## Running
 - `cargo run -p luxpath-cli -- --help`
+- `cargo run -p luxpath-cli -- check examples/corridor.toml` (a scene; format in `docs/scene-format.md`)
 - `cargo run -p luxpath-cli -- point 2.5 3` (direct illuminance demo)
 - `cargo run -p luxpath-cli -- photometry <file.ies|.ldt>` (what a photometric file says)
 - `cargo xtask fuzz [seconds]` (fuzz the photometric readers; 600 s is M1's exit criterion)
