@@ -1,6 +1,6 @@
 # Publishing checklist
 
-> **Last updated:** 2026-10-21 · **Change:** prepared after M3
+> **Last updated:** 2026-10-22 · **Change:** published
 
 What has to be true before the repository goes public, and the switches the owner flips. Decision recorded
 2026-10-21: go public after M3, as a clearly labelled pre-alpha.
@@ -20,6 +20,14 @@ What has to be true before the repository goes public, and the switches the owne
 | Issue templates (wrong result, bug) and the PR template | done | `.github/` |
 | Accidental `cargo publish` blocked | `publish = false` in every crate | `Cargo.toml` |
 | Hosted CI ready (gates on Linux, macOS, Windows; cargo deny) | ready, unused while private | `.github/workflows/ci.yml` |
+
+## Done on 2026-10-22
+
+The repository is public (the owner's decision, after a fresh licence check: every dependency permissive or MPL-2.0
+unmodified, `cargo deny` clean, nothing but synthetic photometry in the history). Private vulnerability reporting is
+on; the description and topics are set; `main` requires the four CI checks, linear history, no force pushes. The
+first hosted Windows run found a line-ending bug in a test (fixed, PR #7). Not done: a code of conduct and
+Discussions (optional), crates.io (below).
 
 ## The owner's switches, in order
 
