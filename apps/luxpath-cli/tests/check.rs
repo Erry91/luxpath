@@ -51,7 +51,11 @@ fn every_example_is_calculated_and_cannot_be_verified_until_m4() {
 #[test]
 fn a_luminaire_without_emergency_output_is_reported_not_guessed() {
     let scene = std::fs::read_to_string(examples().join("open-office.toml")).unwrap();
-    let dir = scratch("no-emergency", &scene.replace("emergency = { flux_lm = 200 }\n", ""));
+    // Drop the line whatever the checkout's line ends (Windows checks text out with CRLF).
+    let without: String =
+        scene.lines().filter(|l| l.trim() != "emergency = { flux_lm = 200 }").map(|l| format!("{l}\n")).collect();
+    assert_ne!(without.lines().count(), scene.lines().count(), "the example declares the emergency output");
+    let dir = scratch("no-emergency", &without);
     let (code, out, _) = luxpath(&["check", dir.join("scene.toml").to_str().unwrap()]);
     assert_eq!(code, 3);
     assert!(out.contains("CANNOT VERIFY: photometry `bulkhead` declares no emergency output"), "{out}");
