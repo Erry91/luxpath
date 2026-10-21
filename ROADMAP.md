@@ -2,7 +2,7 @@
 
 **Stage: pre-alpha** · next: alpha (M1–M4 + M6 validation) · ~150–250 agent-assisted hours away
 
-> **Last updated:** 2026-10-21 · **Change:** M1 (photometry readers) done
+> **Last updated:** 2026-10-21 · **Change:** M2 (engine) done
 
 luxpath's one-page summary. Details live in:
 
@@ -24,7 +24,7 @@ luxpath's one-page summary. Details live in:
 
 ## Next up
 
-1. **M2:** grids, sums over luminaires, tilt, vertical illuminance, photometry plausibility warnings (gap 13).
+1. **M3:** the scene format and `luxpath check`; obstruction by walls (gap 16) before M4.
 2. **Real photometric files** from the owner's practice, kept in `plan/` (gap 12).
 3. **Open question:** buy EN 1838:2024 (around €100 from a national standards body) to verify the requirement values.
 
@@ -32,6 +32,7 @@ luxpath's one-page summary. Details live in:
 
 | Date | Change |
 |---|---|
+| 2026-10-21 | M2: luminaires with heading and tilt (IES tilt factors applied), illuminance on any surface, area and full-width route grids summed over luminaires, statistics that are unverifiable when any point is; isotropic and Lambertian cases within 1e-6; 100 luminaires × 10,000 points in about 55 ms (release, in `cargo xtask ci`); photometry plausibility warnings. |
 | 2026-10-21 | M1: IES LM-63 (1986–2019) and EULUMDAT readers, symmetry expansion, tilt data, emergency flux, located errors, property tests, a 10-minute fuzz run (22.8 million inputs) without a panic; `luxpath photometry`. Existing crates evaluated first: none usable (docs/architecture.md). |
 | 2026-10-16 | M7 (early): `luxpath-ifc` and `luxpath inspect-ifc`; 9 public models inspected, findings in docs/research.md §7. |
 | 2026-10-16 | M0: workspace, layering and parity gates, C-γ intensity table, direct illuminance, demo CLI, docs. |

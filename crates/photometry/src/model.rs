@@ -77,6 +77,8 @@ pub struct Photometry {
     symmetry: Symmetry,
     format: Format,
     tilt: Option<Tilt>,
+    /// The light output ratio the file declares (EULUMDAT line 23), as a fraction.
+    declared_lor: Option<f64>,
     /// The manufacturer, as the file names it (may be empty).
     pub manufacturer: String,
     /// The luminaire's name or description (may be empty).
@@ -104,10 +106,16 @@ impl Photometry {
             symmetry,
             format,
             tilt: None,
+            declared_lor: None,
             manufacturer: String::new(),
             name: String::new(),
             catalogue: String::new(),
         })
+    }
+
+    pub(crate) fn with_declared_lor(mut self, lor: Option<f64>) -> Self {
+        self.declared_lor = lor;
+        self
     }
 
     pub(crate) fn with_tilt(mut self, tilt: Option<Tilt>) -> Self {
@@ -149,6 +157,22 @@ impl Photometry {
         self.table.integrated_flux() / 1000.0
     }
 
+    /// What looks wrong in the file without making it unreadable. A check using this photometry
+    /// should show these to the designer.
+    pub fn warnings(&self) -> Vec<PhotometryWarning> {
+        let mut warnings = Vec::new();
+        let lor = self.light_output_ratio();
+        if !self.absolute && lor > 1.0 + LOR_SLACK {
+            warnings.push(PhotometryWarning::MoreLightThanLamps { light_output_ratio: lor });
+        }
+        if let Some(declared) = self.declared_lor
+            && (declared - lor).abs() > LOR_SLACK.max(0.05 * declared)
+        {
+            warnings.push(PhotometryWarning::DeclaredRatioDiffers { declared, integrated: lor });
+        }
+        warnings
+    }
+
     /// Intensity in candela towards `(c, gamma)` (degrees) at a flux of `flux_lm`.
     pub fn candela(&self, c: f64, gamma: f64, flux_lm: f64) -> f64 {
         self.table.intensity(c, gamma) * flux_lm / 1000.0
@@ -167,6 +191,36 @@ impl Photometry {
             EmergencyOutput::FluxLm(_) => Err(PhotometryError::BadFlux {
                 reason: "the emergency flux must be above 0 lm and at most the rated flux",
             }),
+        }
+    }
+}
+
+/// The integration's own error stays far below this (`IntensityTable::integrated_flux`).
+const LOR_SLACK: f64 = 0.01;
+
+/// Something implausible in a photometric file.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum PhotometryWarning {
+    /// Relative photometry whose table emits more than its lamps (a light output ratio above 1).
+    MoreLightThanLamps { light_output_ratio: f64 },
+    /// The light output ratio the file declares differs from its table's by more than 5 %.
+    DeclaredRatioDiffers { declared: f64, integrated: f64 },
+}
+
+impl std::fmt::Display for PhotometryWarning {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::MoreLightThanLamps { light_output_ratio } => write!(
+                f,
+                "the table emits {:.1} % of the lamp flux: more light than the lamps give; is the flux or the multiplier wrong?",
+                light_output_ratio * 100.0
+            ),
+            Self::DeclaredRatioDiffers { declared, integrated } => write!(
+                f,
+                "the file declares a light output ratio of {:.1} % but its table integrates to {:.1} %",
+                declared * 100.0,
+                integrated * 100.0
+            ),
         }
     }
 }
@@ -208,6 +262,29 @@ mod tests {
     fn candela_scales_with_flux() {
         // 1000 cd/klm at 500 lm is 500 cd.
         assert_eq!(photometry(2000.0).candela(10.0, 20.0, 500.0), 500.0);
+    }
+
+    #[test]
+    fn implausible_files_are_warned_about() {
+        // Isotropic 1000 cd/klm emits 4π × 1000 lm per klm: a ratio of 12.6.
+        let p = photometry(1000.0);
+        assert!(matches!(p.warnings()[..], [PhotometryWarning::MoreLightThanLamps { .. }]));
+        // 1000/(4π) cd/klm all round emits exactly the lamps' flux: no warning at a ratio of 1.
+        let exact = Photometry::new(
+            IntensityTable::isotropic(1000.0 / (4.0 * std::f64::consts::PI)).unwrap(),
+            1000.0,
+            false,
+            Symmetry::Rotational,
+            Format::Eulumdat,
+        )
+        .unwrap();
+        assert_eq!(exact.warnings(), vec![]);
+        // Declared 100 %, integrated 100 %: fine; declared 80 %: warned.
+        assert_eq!(exact.clone().with_declared_lor(Some(1.0)).warnings(), vec![]);
+        assert!(matches!(
+            exact.with_declared_lor(Some(0.8)).warnings()[..],
+            [PhotometryWarning::DeclaredRatioDiffers { .. }]
+        ));
     }
 
     #[test]

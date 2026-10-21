@@ -24,7 +24,7 @@ mod text;
 
 pub use ies::{IesEdition, read_ies};
 pub use ldt::read_eulumdat;
-pub use model::{EmergencyOutput, Format, Photometry, Tilt, read};
+pub use model::{EmergencyOutput, Format, Photometry, PhotometryWarning, Tilt, read};
 pub use symmetry::Symmetry;
 pub use text::{MAX_FILE_BYTES, ReadError, ReadErrorKind};
 
@@ -190,7 +190,8 @@ impl IntensityTable {
         let c = wrap_degrees(c);
         // Find the C planes either side of `c`, wrapping from the last plane back to C0 (= C360).
         let n_c = self.c_angles.len();
-        let lower = self.c_angles.iter().rposition(|a| *a <= c).unwrap_or(0);
+        // The last plane at or below `c` (binary search: angles increase strictly).
+        let lower = self.c_angles.partition_point(|a| *a <= c).saturating_sub(1);
         let (upper, c_lo, c_hi) = match self.c_angles.get(lower + 1) {
             Some(hi) => (lower + 1, self.c_angles.get(lower).copied().unwrap_or(0.0), *hi),
             None => (0, self.c_angles.get(lower).copied().unwrap_or(0.0), 360.0),
@@ -240,7 +241,7 @@ fn bracket(angles: &[f64], x: f64) -> (usize, usize, f64) {
     if x >= *last_a {
         return (last, last, 0.0);
     }
-    let hi = angles.iter().position(|a| *a > x).unwrap_or(last);
+    let hi = angles.partition_point(|a| *a <= x).min(last);
     let lo = hi.saturating_sub(1);
     let (a_lo, a_hi) = (angles.get(lo).copied().unwrap_or(0.0), angles.get(hi).copied().unwrap_or(0.0));
     let t = if a_hi > a_lo { (x - a_lo) / (a_hi - a_lo) } else { 0.0 };
