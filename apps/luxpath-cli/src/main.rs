@@ -150,6 +150,9 @@ fn describe(p: &Photometry) -> String {
     if let Some(tilt) = p.tilt() {
         line("tilt", format!("{} angles, lamp geometry {}", tilt.angles_deg().len(), tilt.lamp_geometry));
     }
+    for warning in p.warnings() {
+        line("warning", warning.to_string());
+    }
     out
 }
 
@@ -171,6 +174,7 @@ fn point(args: &[String]) -> Result<f64, String> {
     let luminaire = Luminaire {
         position: Vec3::new(0.0, 0.0, height),
         rotation_deg: 0.0,
+        tilt_deg: 0.0,
         distribution,
         flux_lm: flux,
         maintenance_factor: 1.0,

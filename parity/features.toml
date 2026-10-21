@@ -67,7 +67,7 @@ tier = "P0"
 milestone = "M1"
 status = "partial"
 evidence = ["crates/photometry/src/ies.rs::a_quadrant_file_reads_into_a_full_table_in_cd_per_klm", "crates/photometry/src/ies.rs::absolute_photometry_takes_its_flux_from_the_table", "crates/photometry/src/ies.rs::older_editions_apply_the_ballast_lamp_factor_and_newer_ones_do_not", "crates/photometry/src/ies.rs::tilt_tables_are_read", "crates/photometry/src/ies.rs::errors_name_their_line", "crates/photometry/tests/fuzz.rs::fuzz_briefly"]
-notes = "Editions 1986–2019, type C, relative and absolute photometry, TILT=INCLUDE, located errors, fuzzed. Missing: type A and B photometry (refused, not guessed), TILT=<file>; the edition-specific factors are from our reading of the format, not yet checked against the LM-63 texts; no real manufacturer file tried yet."
+notes = "Editions 1986–2019, type C, relative and absolute photometry, TILT=INCLUDE, located errors, fuzzed, warnings for files emitting more than their lamps. Missing: type A and B photometry (refused, not guessed), TILT=<file>; the edition-specific factors are from our reading of the format, not yet checked against the LM-63 texts; no real manufacturer file tried yet."
 
 [[feature]]
 id = "photometry.ldt-read"
@@ -77,7 +77,7 @@ tier = "P0"
 milestone = "M1"
 status = "partial"
 evidence = ["crates/photometry/src/ldt.rs::a_c0_c180_file_reads_into_a_full_table", "crates/photometry/src/ldt.rs::every_symmetry_indicator_selects_its_planes", "crates/photometry/src/ldt.rs::decimal_commas_and_latin1_are_accepted", "crates/photometry/src/ldt.rs::errors_name_their_line", "crates/photometry/tests/fuzz.rs::fuzz_briefly"]
-notes = "All five symmetry indicators, Latin-1, decimal commas, located errors, fuzzed. Missing: files with more than one lamp set (refused), a check of the declared light output ratio against the table; no real manufacturer file tried yet."
+notes = "All five symmetry indicators, Latin-1, decimal commas, located errors, fuzzed; warnings when the declared light output ratio and the table disagree. Missing: files with more than one lamp set (refused); no real manufacturer file tried yet beyond one public sample."
 
 [[feature]]
 id = "photometry.emergency-flux"
@@ -107,9 +107,9 @@ title = "Direct horizontal illuminance at a point (inverse-square cosine law)"
 area = "calc"
 tier = "P0"
 milestone = "M0"
-status = "partial"
-evidence = ["crates/calc/src/lib.rs::off_axis_points_follow_the_cosine_law", "crates/calc/src/lib.rs::rotation_selects_the_c_plane"]
-notes = "Downward-pointing luminaires rotated about z. Missing: tilted luminaires, vertical and inclined planes, obstruction."
+status = "shipped"
+evidence = ["crates/calc/src/tests.rs::off_axis_points_follow_the_cosine_law", "crates/calc/src/tests.rs::a_lambertian_source_matches_its_closed_form", "crates/calc/src/tests.rs::rotation_selects_the_c_plane"]
+notes = "On any surface normal, isotropic and Lambertian sources within 1e-6 of their closed forms. Missing: obstruction (walls between luminaire and point), area sources (luminaires are points)."
 
 [[feature]]
 id = "calc.grids"
@@ -117,7 +117,9 @@ title = "Calculation grids over areas and along routes, summed over all luminair
 area = "calc"
 tier = "P0"
 milestone = "M2"
-status = "planned"
+status = "shipped"
+evidence = ["crates/calc/src/grid.rs::an_area_grid_takes_cell_centres_inside_less_the_border", "crates/calc/src/grid.rs::a_route_grid_covers_the_full_width_and_each_corner_once", "crates/calc/src/tests.rs::grids_sum_every_luminaire", "crates/calc/src/tests.rs::an_area_under_one_luminaire_matches_the_closed_form_point_by_point", "crates/calc/src/stats.rs::statistics_by_hand", "crates/calc/tests/performance.rs::a_hundred_luminaires_over_ten_thousand_points_within_budget"]
+notes = "Area grids (polygon less a border), route grids over the full width, explicit points; min, mean, max, max/min and min/mean; any undefined point makes the statistics unverifiable. 100 luminaires × 10,000 points in about 55 ms. The spacings and borders EN 1838 asks for are M4's (from the standard's text)."
 
 [[feature]]
 id = "calc.tilt"
@@ -125,7 +127,9 @@ title = "Tilted and wall-mounted luminaires"
 area = "calc"
 tier = "P1"
 milestone = "M2"
-status = "planned"
+status = "shipped"
+evidence = ["crates/calc/src/tests.rs::a_tilted_luminaire_aims_its_light_towards_c0", "crates/calc/src/tests.rs::tilt_factors_from_the_file_scale_the_light_and_unknown_tilts_are_errors"]
+notes = "Heading and tilt (about the luminaire's C90-C270 axis, towards C0); IES tilt factors applied, a tilt outside the file's table refused. Missing: a third rotation (roll about C0) for luminaires mounted on sloped ceilings."
 
 [[feature]]
 id = "calc.vertical-illuminance"
@@ -133,7 +137,9 @@ title = "Vertical illuminance (e.g. at fire-fighting equipment)"
 area = "calc"
 tier = "P0"
 milestone = "M2"
-status = "planned"
+status = "shipped"
+evidence = ["crates/calc/src/tests.rs::vertical_illuminance_follows_the_cosine_law_on_the_wall"]
+notes = "Any surface normal, so vertical and inclined planes alike. Which points and normals EN 1838 asks for at equipment is M4's."
 
 [[feature]]
 id = "calc.first-reflection"

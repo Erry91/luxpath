@@ -1,6 +1,7 @@
 //! `cargo xtask <command>`: repository automation.
 //!
-//! - `ci`: every gate CI runs (fmt, clippy -D warnings, tests, wasm check, layers, parity).
+//! - `ci`: every gate CI runs (fmt, clippy -D warnings, tests, the release-mode performance budget,
+//!   wasm check, layers, parity).
 //! - `layers`: checks that crates only depend on crates in lower layers.
 //! - `parity`: validates `parity/features.toml` and prints progress by milestone.
 //! - `fuzz [seconds]`: fuzzes the photometric file readers (default 600 s, M1's exit criterion).
@@ -43,6 +44,8 @@ fn ci() -> Result<(), String> {
     cargo(&["fmt", "--all", "--check"])?;
     cargo(&["clippy", "--workspace", "--all-targets", "--", "-D", "warnings"])?;
     cargo(&["test", "--workspace"])?;
+    // M2's budget: timing is meaningful only in release.
+    cargo(&["test", "--release", "-p", "luxpath-calc", "--test", "performance", "--", "--ignored"])?;
     if wasm_target_installed() {
         let mut args = vec!["check", "--target", "wasm32-unknown-unknown"];
         for krate in WASM_CRATES {

@@ -92,10 +92,10 @@ pub fn read_eulumdat(bytes: &[u8]) -> Result<Photometry, ReadError> {
         "luminous area height at C180",
         "luminous area height at C270",
         "downward flux fraction",
-        "light output ratio",
     ] {
         fields.number(what)?;
     }
+    let (_, declared_lor) = fields.number("light output ratio")?;
     let (line, conversion) = fields.number("intensity conversion factor")?;
     if conversion <= 0.0 {
         return Err(invalid(line, "intensity conversion factor", "is not positive"));
@@ -170,7 +170,9 @@ pub fn read_eulumdat(bytes: &[u8]) -> Result<Photometry, ReadError> {
         other => invalid(c_first_line, "C angles", other.reason()),
     })?;
     let mut photometry = Photometry::new(table, flux_lm, lamps < 0.0, symmetry, Format::Eulumdat)
-        .map_err(|e| error(flux_line, ReadErrorKind::Table(e)))?;
+        .map_err(|e| error(flux_line, ReadErrorKind::Table(e)))?
+        // A ratio of 0 is how some writers leave it out.
+        .with_declared_lor((declared_lor > 0.0).then_some(declared_lor / 100.0));
     photometry.manufacturer = company;
     photometry.name = name;
     photometry.catalogue = catalogue;
