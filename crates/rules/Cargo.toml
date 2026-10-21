@@ -10,6 +10,8 @@ repository.workspace = true
 [dependencies]
 luxpath-scene.workspace = true
 luxpath-calc.workspace = true
+luxpath-geom.workspace = true
+luxpath-photometry.workspace = true
 
 [lints]
 workspace = true

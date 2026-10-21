@@ -2,8 +2,16 @@
 
 > **Last updated:** 2026-10-21
 
-**Milestone:** M2 done (calculation engine); M1 done (photometry readers). **Direction under study:** EN 1838 checks on IFC models
+**Milestone:** M3 done (scene and `luxpath check`); M1–M2 done (photometry readers, engine). **Direction under study:** EN 1838 checks on IFC models
 (docs/research.md §6–7). The IFC inspector (`luxpath inspect-ifc`, an early piece of M7) is done.
+
+## M3 (2026-10-21)
+Scenes are TOML files, version 1 (`docs/scene-format.md`): photometric files with their emergency output,
+luminaires (heading, tilt), escape routes, open and high-risk areas, points of emphasis, calculation settings.
+Unknown fields are errors, and every error names its line and column; the maintenance factor and emergency outputs
+have no defaults. `luxpath check scene.toml` prints illuminance per route, area and point with the assumptions, and
+exits 0 pass, 1 fail, 2 input error, 3 cannot verify; until M4 checks requirements, it always answers 3. Three
+example scenes in `examples/`.
 
 ## M2 (2026-10-21)
 `luxpath-calc` places luminaires with a heading and a tilt (90° = wall-mounted; IES tilt factors applied, a tilt
@@ -29,11 +37,12 @@ FireExit flags. Luminaires collapse into few types (410 → 5), so a photometry 
 - **A. Evidence:** inspect one real project IFC from a practising office (privately, in `plan/`).
 - **B. IFC scene:** read luminaire positions and space outlines (geometry) and define the mapping file
   (type name or product code → photometric file, emergency yes/no).
-- **C. M3 scene:** the TOML scene format and `luxpath check` (then obstruction, gap 16, before M4).
+- **C. Obstruction** (gap 16): walls in the scene block light; an alpha blocker before M4's checks.
+- **E. Going public:** the publishing checklist (`docs/publishing.md`).
 - **D. Real files:** photometric files of luminaires the owner's practice uses, privately in `plan/` (gap 12).
 
 ## Blockers
-- None for M3. **Before M4:** the EN 1838:2024 text (Italian edition UNI EN 1838:2025) is needed to verify values (gap 4).
+- None for obstruction. **Before M4:** the EN 1838:2024 text (Italian edition UNI EN 1838:2025) is needed to verify values (gap 4).
 
 ## Open questions (owner)
 - Practitioner questions in `docs/research.md` §5.

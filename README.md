@@ -6,8 +6,9 @@ luxpath checks emergency escape lighting designs against **EN 1838:2024**: escap
 high-risk task areas and points of emphasis. You describe a floor in a readable text file and give it photometric
 files (IES, EULUMDAT). luxpath computes the illuminance and tells you which requirements pass, which fail and why.
 
-> **Status: pre-alpha (M0).** The calculation core exists and is tested. Reading photometric files, the scene
-> format and the EN 1838 checks are next. See [ROADMAP.md](ROADMAP.md).
+> **Status: pre-alpha (M3).** Photometric files (IES, EULUMDAT), the calculation engine and the scene format work,
+> and `luxpath check` computes a scene's emergency lighting. **No EN 1838 requirement is checked yet** (M4), and
+> nothing is validated against another tool (M6): do not rely on the results. See [ROADMAP.md](ROADMAP.md).
 
 ## Why
 
@@ -23,6 +24,7 @@ GUI-only. luxpath aims to be:
 ## Try it
 
 ```sh
+cargo run -p luxpath-cli -- check examples/corridor.toml    # emergency lighting of an example scene
 cargo run -p luxpath-cli -- point 2.5 3      # direct illuminance 3 m away from a source mounted at 2.5 m
 cargo run -p luxpath-cli -- photometry crates/photometry/tests/fixtures/downlight.ldt   # read an IES or LDT file
 cargo xtask ci                               # every quality gate

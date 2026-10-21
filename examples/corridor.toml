@@ -1,0 +1,73 @@
+# An L-shaped corridor, 2 m wide, leading to an exit; synthetic.
+# Run: cargo run -p luxpath-cli -- check examples/corridor.toml
+format = "luxpath-scene"
+version = 1
+
+[project]
+name = "Example: L-shaped corridor"
+maintenance_factor = 0.8
+
+[[photometry]]
+id = "corridor"
+file = "photometry/corridor.ies"
+# Self-contained emergency luminaire: 120 lm in emergency mode.
+emergency = { flux_lm = 120 }
+
+[[photometry]]
+id = "bulkhead"
+file = "photometry/bulkhead.ldt"
+# Mains luminaire with an emergency conversion kit: 40 % of its rated flux on battery.
+emergency = { ballast_lumen_factor = 0.4 }
+
+# Along the first leg (east), C0 along the corridor.
+[[luminaire]]
+id = "L1"
+photometry = "corridor"
+position = [2.0, 1.0, 2.7]
+
+[[luminaire]]
+id = "L2"
+photometry = "corridor"
+position = [8.0, 1.0, 2.7]
+
+[[luminaire]]
+id = "L3"
+photometry = "corridor"
+position = [14.0, 1.0, 2.7]
+
+# Along the second leg (north), turned to follow it.
+[[luminaire]]
+id = "L4"
+photometry = "corridor"
+position = [15.0, 6.0, 2.7]
+rotation_deg = 90
+
+[[luminaire]]
+id = "L5"
+photometry = "bulkhead"
+position = [15.0, 11.0, 2.7]
+
+[[route]]
+id = "R1"
+name = "Corridor to exit A"
+path = [[0, 1], [15, 1], [15, 12]]
+width_m = 2.0
+
+[[point]]
+id = "E1"
+name = "Exit A"
+kind = "exit"
+position = [15.0, 12.0, 0.0]
+
+[[point]]
+id = "D1"
+name = "Corner"
+kind = "direction-change"
+position = [15.0, 1.0, 0.0]
+
+[[point]]
+id = "F1"
+name = "Fire extinguisher"
+kind = "fire-fighting"
+position = [10.0, 0.05, 1.2]
+facing = [0, 1, 0]
