@@ -24,6 +24,7 @@ GUI-only. luxpath aims to be:
 
 ```sh
 cargo run -p luxpath-cli -- point 2.5 3      # direct illuminance 3 m away from a source mounted at 2.5 m
+cargo run -p luxpath-cli -- photometry crates/photometry/tests/fixtures/downlight.ldt   # read an IES or LDT file
 cargo xtask ci                               # every quality gate
 cargo xtask parity                           # feature progress by milestone
 ```

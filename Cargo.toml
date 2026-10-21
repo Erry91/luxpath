@@ -24,6 +24,8 @@ serde_json = "1"
 toml = "0.9"
 # IFC (STEP) parsing; MPL-2.0, used unmodified as a dependency (AGENTS.md §1.2)
 ifc-lite-core = "20.4"
+# tests only
+proptest = { version = "1.11", default-features = false, features = ["std"] }
 
 [workspace.lints.rust]
 unsafe_code = "forbid"

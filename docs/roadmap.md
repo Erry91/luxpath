@@ -1,6 +1,6 @@
 # Milestones
 
-> **Last updated:** 2026-10-16 · **Change:** initial plan
+> **Last updated:** 2026-10-21 · **Change:** M1 done
 
 Estimates are agent-assisted hours (a human directing an agent, reviewing every change) and are rough until M2
 calibrates them. Each milestone ends with its exit criteria met, `cargo xtask ci` green, and the parity entries
@@ -9,7 +9,7 @@ updated.
 | M | Name | Scope | Exit criteria | Est. h | Status |
 |---|---|---|---|---|---|
 | M0 | Foundations | Workspace, lints, CI, `xtask` gates (ci, layers, parity), docs, intensity table, direct point illuminance, demo CLI | All gates green; one hand-checked calculation end to end | 5–8 | **done** |
-| M1 | Photometry | IES LM-63 (1995/2002/2019) and EULUMDAT readers; symmetry expansion; tilt data; emergency-mode flux; validation errors with line numbers; property tests and fuzzing | Synthetic fixtures for every symmetry type read identically from IES and LDT; fuzzing finds no panic in 10 min | 20–35 | planned |
+| M1 | Photometry | IES LM-63 (1995/2002/2019) and EULUMDAT readers; symmetry expansion; tilt data; emergency-mode flux; validation errors with line numbers; property tests and fuzzing | Synthetic fixtures for every symmetry type read identically from IES and LDT; fuzzing finds no panic in 10 min | 20–35 | **done** |
 | M2 | Engine | Calculation grids (areas, route bands), sums over luminaires, tilted/wall-mounted luminaires, vertical illuminance, min/avg/max/uniformity statistics | Analytic test cases (isotropic, Lambertian) match to 1e-6; performance: 100 luminaires × 10k points < 100 ms | 20–30 | planned |
 | M3 | Scene and CLI | TOML scene format (versioned), 2D geometry (polygons, routes with width), `luxpath check scene.toml` with exit codes | Three example scenes in `examples/`; malformed scenes give located errors | 20–30 | planned |
 | M4 | EN 1838:2024 | Every requirement in `docs/standards-parity.md`: escape routes over the full width, uniformity, open areas, high-risk areas, points of emphasis, glare limits, declared duration/response | Each P0 requirement tested on both sides of its threshold; values verified against the standard's text | 25–40 | planned |

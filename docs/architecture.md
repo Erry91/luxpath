@@ -40,5 +40,8 @@ new crate isn't listed in `xtask/src/layers.rs`.
   are applied at calculation time, so one table serves mains and emergency modes.
 - **Verdicts are three-valued:** pass, fail, cannot verify. Missing data is never a pass.
 - **Text formats for everything a user writes** (scenes in TOML), so designs can be reviewed and diffed.
-- **Own photometry readers.** Existing crates are AGPL (`eulumdat`) or unmaintained (`lidrs`, 2022); the formats
-  are small and well documented.
+- **Own photometry readers.** Re-evaluated 2026-10-21 before M1: `eulumdat` and `gldf-rs` are AGPL-3.0 and
+  `l3d_rs` GPL-3.0 (excluded, AGENTS.md §1.2). `lidrs` (MIT) is the only permissive one, but its development
+  stopped in 2022 (later commits are dependency bumps); it has `todo!()` for type A/B files, no LM-63-2019, panics
+  on 126 of about 18,000 mutated inputs, and accepts 85 of 415 truncated IES files as valid. The formats are
+  small, so luxpath has its own readers (`luxpath-photometry`), built to AGENTS.md §3.

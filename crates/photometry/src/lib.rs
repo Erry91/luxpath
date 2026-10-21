@@ -8,10 +8,25 @@
 //! Values are stored **per 1000 lm of lamp flux** (cd/klm), the form EULUMDAT uses; IES files
 //! (absolute candela) are normalised to it on read. Multiply by `flux / 1000` for candela.
 //!
-//! Status: M0 has the table and its interpolation. The IES LM-63 and EULUMDAT readers, and
-//! symmetry expansion, are M1 (see `parity/features.toml`, area `photometry`).
+//! Files are read into a [`Photometry`] (the table, the flux it is relative to, tilt data) by
+//! [`read`], [`read_ies`] (IES LM-63, 1986 to 2019) and [`read_eulumdat`] (EULUMDAT, .ldt); the part
+//! of the distribution a file stores is mirrored into a full table ([`Symmetry`]). Every file is
+//! untrusted: readers return a [`ReadError`] with the line it concerns, never panic, and cap what
+//! they allocate.
 //!
-//! Layer L1: depends on `luxpath-geom`.
+//! Layer L1: depends on `luxpath-geom`. No I/O: readers take the file's bytes.
+
+mod ies;
+mod ldt;
+mod model;
+mod symmetry;
+mod text;
+
+pub use ies::{IesEdition, read_ies};
+pub use ldt::read_eulumdat;
+pub use model::{EmergencyOutput, Format, Photometry, Tilt, read};
+pub use symmetry::Symmetry;
+pub use text::{MAX_FILE_BYTES, ReadError, ReadErrorKind};
 
 use luxpath_geom::wrap_degrees;
 
@@ -31,6 +46,8 @@ pub enum PhotometryError {
     BadAngles { which: &'static str, reason: &'static str },
     /// A value is negative, NaN or infinite.
     BadValue { index: usize },
+    /// A flux or a factor is zero, negative, not a number, or out of its range.
+    BadFlux { reason: &'static str },
 }
 
 impl std::fmt::Display for PhotometryError {
@@ -45,6 +62,7 @@ impl std::fmt::Display for PhotometryError {
             }
             Self::BadAngles { which, reason } => write!(f, "{which} angles: {reason}"),
             Self::BadValue { index } => write!(f, "intensity value #{index} is negative or not a number"),
+            Self::BadFlux { reason } => write!(f, "{reason}"),
         }
     }
 }
@@ -96,13 +114,76 @@ impl IntensityTable {
         Self::new(vec![0.0], vec![0.0, 180.0], vec![cd_per_klm, cd_per_klm])
     }
 
+    /// The C angles in degrees, from C0, strictly increasing, below 360.
+    pub fn c_angles(&self) -> &[f64] {
+        &self.c_angles
+    }
+
+    /// The γ angles in degrees, strictly increasing, within `[0, 180]`.
+    pub fn gamma_angles(&self) -> &[f64] {
+        &self.gamma_angles
+    }
+
+    /// The values, one C plane after another.
+    pub fn values(&self) -> &[f64] {
+        &self.values
+    }
+
+    /// The same table with every value multiplied by `factor` (finite, non-negative).
+    pub fn scaled(&self, factor: f64) -> Result<Self, PhotometryError> {
+        if !factor.is_finite() || factor < 0.0 {
+            return Err(PhotometryError::BadFlux { reason: "a scale factor is negative or not a number" });
+        }
+        Self::new(self.c_angles.clone(), self.gamma_angles.clone(), self.values.iter().map(|v| v * factor).collect())
+    }
+
+    /// The flux the table emits, ∫ I dΩ over the sphere: lumens for a table in candela, lumens per
+    /// 1000 lamp lumens for a table in cd/klm (so 1000 × the light output ratio).
+    ///
+    /// Zonal sum: each γ row is averaged over C (trapezoids around the circle), and each band
+    /// between two rows gets the mean of its rows times its solid angle, 2π (cos γ₁ − cos γ₂).
+    /// Exact for distributions constant within each band (an isotropic I gives 4π I); otherwise the
+    /// error shrinks with the angle step (about 1e-4 for a Lambertian table at 1° steps).
+    pub fn integrated_flux(&self) -> f64 {
+        let mean_over_c = |g: usize| -> f64 {
+            let n = self.c_angles.len();
+            if n == 1 {
+                return self.value(0, g);
+            }
+            let mut sum = 0.0;
+            for i in 0..n {
+                let (c0, v0) = (self.c_angles.get(i).copied().unwrap_or(0.0), self.value(i, g));
+                let (c1, v1) = match self.c_angles.get(i + 1) {
+                    Some(c1) => (*c1, self.value(i + 1, g)),
+                    None => (360.0, self.value(0, g)),
+                };
+                sum += (v0 + v1) / 2.0 * (c1 - c0);
+            }
+            sum / 360.0
+        };
+        let means: Vec<f64> = (0..self.gamma_angles.len()).map(mean_over_c).collect();
+        let mut flux = 0.0;
+        for (g, pair) in self.gamma_angles.windows(2).enumerate() {
+            let (Some(g0), Some(g1)) = (pair.first(), pair.get(1)) else { continue };
+            let (Some(m0), Some(m1)) = (means.get(g), means.get(g + 1)) else { continue };
+            let solid_angle = std::f64::consts::TAU * (g0.to_radians().cos() - g1.to_radians().cos());
+            flux += (m0 + m1) / 2.0 * solid_angle;
+        }
+        flux
+    }
+
     /// Intensity in cd/klm towards `(c, gamma)` in degrees, bilinearly interpolated.
     ///
-    /// `c` wraps around 360°. `gamma` outside the table's range is clamped to its end values
-    /// (a table that stops at γ90 has no upward light, which its last row should say).
+    /// `c` wraps around 360°; `gamma` is clamped to `[0, 180]`. Outside the table's γ range the
+    /// intensity is 0: a file measured from γ0 to γ90 says the luminaire emits no upward light.
     /// Non-finite angles return 0.
     pub fn intensity(&self, c: f64, gamma: f64) -> f64 {
         if !c.is_finite() || !gamma.is_finite() {
+            return 0.0;
+        }
+        let gamma = gamma.clamp(0.0, 180.0);
+        let (Some(first), Some(last)) = (self.gamma_angles.first(), self.gamma_angles.last()) else { return 0.0 };
+        if gamma < *first || gamma > *last {
             return 0.0;
         }
         let (g0, g1, gt) = bracket(&self.gamma_angles, gamma);
@@ -194,6 +275,54 @@ mod tests {
         assert_eq!(t.intensity(0.0, 45.0), 150.0);
         assert_eq!(t.intensity(0.0, -10.0), 200.0);
         assert_eq!(t.intensity(0.0, 200.0), 0.0);
+    }
+
+    #[test]
+    fn there_is_no_light_outside_the_measured_gamma_range() {
+        // Measured from γ0 to γ90 only, with light at γ90: none above it.
+        let down = IntensityTable::new(vec![0.0], vec![0.0, 90.0], vec![100.0, 40.0]).unwrap();
+        assert_eq!(down.intensity(0.0, 90.0), 40.0);
+        assert_eq!(down.intensity(0.0, 90.5), 0.0);
+        // Measured from γ90 to γ180 only (an uplight): none below γ90.
+        let up = IntensityTable::new(vec![0.0], vec![90.0, 180.0], vec![40.0, 100.0]).unwrap();
+        assert_eq!(up.intensity(0.0, 89.5), 0.0);
+        assert_eq!(up.intensity(0.0, 135.0), 70.0);
+    }
+
+    #[test]
+    fn integrated_flux_is_exact_for_isotropic_and_close_for_lambertian() {
+        // Isotropic: Φ = 4π I.
+        let iso = IntensityTable::isotropic(100.0).unwrap();
+        assert!((iso.integrated_flux() - 400.0 * std::f64::consts::PI).abs() < 1e-9);
+        // Lambertian, I = I₀ cos γ below the horizon: Φ = π I₀ (∫₀^{π/2} cos γ sin γ dγ · 2π = π).
+        let gammas: Vec<f64> = (0..=180).map(f64::from).collect();
+        let values: Vec<f64> =
+            gammas.iter().map(|g| if *g <= 90.0 { 1000.0 * g.to_radians().cos() } else { 0.0 }).collect();
+        let lambert = IntensityTable::new(
+            vec![0.0, 90.0, 180.0, 270.0],
+            gammas.clone(),
+            [values.clone(), values.clone(), values.clone(), values].concat(),
+        )
+        .unwrap();
+        let expected = 1000.0 * std::f64::consts::PI;
+        assert!((lambert.integrated_flux() - expected).abs() / expected < 2e-4, "{}", lambert.integrated_flux());
+        // Doubling C0 and C180 against C90 and C270 averages around the circle by trapezoids:
+        // the mean over C of 2, 1, 2, 1 is 1.5.
+        let uneven = IntensityTable::new(
+            vec![0.0, 90.0, 180.0, 270.0],
+            vec![0.0, 180.0],
+            vec![2.0, 2.0, 1.0, 1.0, 2.0, 2.0, 1.0, 1.0],
+        )
+        .unwrap();
+        assert!((uneven.integrated_flux() - 1.5 * 4.0 * std::f64::consts::PI).abs() < 1e-9);
+    }
+
+    #[test]
+    fn scaling_multiplies_every_value_and_refuses_bad_factors() {
+        let t = two_plane_table().scaled(0.5).unwrap();
+        assert_eq!(t.values(), &[100.0, 50.0, 0.0, 50.0, 25.0, 0.0]);
+        assert!(two_plane_table().scaled(-1.0).is_err());
+        assert!(two_plane_table().scaled(f64::NAN).is_err());
     }
 
     #[test]
