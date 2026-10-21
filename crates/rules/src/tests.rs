@@ -7,6 +7,10 @@ fn isotropic() -> Photometry {
 }
 
 fn scene(emergency: &str) -> Scene {
+    scene_with(emergency, "")
+}
+
+fn scene_with(emergency: &str, extra: &str) -> Scene {
     Scene::parse(&format!(
         r#"format = "luxpath-scene"
 version = 1
@@ -33,6 +37,7 @@ id = "P1"
 kind = "fire-fighting"
 position = [3, 0, 2]
 facing = [-1, 0, 0]
+{extra}
 "#
     ))
     .unwrap()
@@ -72,6 +77,17 @@ fn a_missing_emergency_output_leaves_everything_unverifiable() {
     }
     let e = evaluate(&scene("emergency = { ballast_lumen_factor = 1.5 }"), &[isotropic()]).unwrap();
     assert!(matches!(&e.results[0].horizontal, Outcome::CannotVerify(why) if why.contains("ballast lumen factor")));
+}
+
+#[test]
+fn a_wall_between_luminaire_and_point_darkens_it() {
+    // A 3 m wall along x = 2.5 hides the point at x = 3 from the only luminaire at x = 0.
+    let wall = "[[wall]]\nid = \"W1\"\npath = [[2.5, -1], [2.5, 1]]\nheight_m = 3\n";
+    let e = evaluate(&scene_with("emergency = { flux_lm = 500 }", wall), &[isotropic()]).unwrap();
+    assert_eq!(computed(e.results[1].vertical.as_ref().unwrap()).max_lx, 0.0);
+    // The route (x from 0 to 2) is on the luminaire's side and unchanged.
+    assert!((computed(&e.results[0].horizontal).max_lx - 100.0).abs() < 1e-9);
+    assert!(e.assumptions.iter().any(|a| a.contains("walls block the light (1 straight piece)")));
 }
 
 #[test]

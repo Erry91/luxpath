@@ -44,7 +44,7 @@ fn every_example_is_calculated_and_cannot_be_verified_until_m4() {
         }
         assert!(!out.contains("CANNOT VERIFY:") || out.contains("Verdict: CANNOT VERIFY"), "{out}");
         assert!(out.contains("min ") && out.contains("not a certificate"), "{out}");
-        assert!(out.contains("nothing blocks their light"), "the assumptions are stated:\n{out}");
+        assert!(out.contains("walls block the light"), "the assumptions are stated:\n{out}");
     }
 }
 
@@ -65,7 +65,9 @@ fn broken_inputs_exit_with_2_and_say_where() {
     let dir = scratch("broken", &scene.replace("width_m = 2.0", "width_m = \"wide\""));
     let (code, _, err) = luxpath(&["check", dir.join("scene.toml").to_str().unwrap()]);
     assert_eq!(code, 2);
-    assert!(err.contains("scene.toml: line 54, column 11"), "{err}");
+    // The error points at the line of `width_m` in the example, wherever it is.
+    let line = scene.lines().position(|l| l.starts_with("width_m = 2.0")).unwrap() + 1;
+    assert!(err.contains(&format!("scene.toml: line {line}, column 11")), "{err}");
 
     std::fs::write(dir.join("scene.toml"), scene.replace("photometry/bulkhead.ldt", "photometry/missing.ldt")).unwrap();
     let (code, _, err) = luxpath(&["check", dir.join("scene.toml").to_str().unwrap()]);

@@ -108,8 +108,8 @@ area = "calc"
 tier = "P0"
 milestone = "M0"
 status = "shipped"
-evidence = ["crates/calc/src/tests.rs::off_axis_points_follow_the_cosine_law", "crates/calc/src/tests.rs::a_lambertian_source_matches_its_closed_form", "crates/calc/src/tests.rs::rotation_selects_the_c_plane"]
-notes = "On any surface normal, isotropic and Lambertian sources within 1e-6 of their closed forms. Missing: obstruction (walls between luminaire and point), area sources (luminaires are points)."
+evidence = ["crates/calc/src/tests.rs::off_axis_points_follow_the_cosine_law", "crates/calc/src/tests.rs::a_lambertian_source_matches_its_closed_form", "crates/calc/src/tests.rs::rotation_selects_the_c_plane", "crates/calc/src/tests.rs::a_wall_hides_a_luminaire_from_the_points_behind_it", "crates/geom/src/lib.rs::walls_block_sight_lines_through_them_and_only_those"]
+notes = "On any surface normal, isotropic and Lambertian sources within 1e-6 of their closed forms; walls block light (`illuminance_with_walls`). Missing: area sources (luminaires are points), obstacles other than walls."
 
 [[feature]]
 id = "calc.grids"
@@ -169,7 +169,7 @@ tier = "P0"
 milestone = "M3"
 status = "shipped"
 evidence = ["crates/scene/src/tests.rs::a_scene_reads_into_its_model", "crates/scene/src/tests.rs::malformed_scenes_give_located_errors", "crates/scene/src/tests.rs::huge_or_hostile_input_is_an_error_not_a_panic"]
-notes = "Version 1 (docs/scene-format.md): unknown fields refused, errors with line and column, no default for the maintenance factor or emergency output. Missing: walls (gap 16), several floors in one scene, a migration tool (none needed yet)."
+notes = "Version 1 (docs/scene-format.md): walls, unknown fields refused, errors with line and column, no default for the maintenance factor or emergency output. Missing: several floors in one scene, a migration tool (none needed yet)."
 
 [[feature]]
 id = "scene.escape-routes"

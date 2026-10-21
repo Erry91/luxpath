@@ -1,6 +1,6 @@
 # Scene format, version 1
 
-> **Last updated:** 2026-10-21 · **Change:** version 1 (M3)
+> **Last updated:** 2026-10-21 · **Change:** walls (version 1, an addition older scenes need not use)
 
 A scene describes what is lit and with what: a TOML file a person can read, review and diff. `luxpath check
 scene.toml` evaluates it. Examples: `examples/*.toml`.
@@ -55,6 +55,21 @@ position = [2.0, 1.0, 2.7]    # the photometric centre
 rotation_deg = 90             # optional: heading of C0, counter-clockwise from +x (default 0)
 tilt_deg = 60                 # optional: tilt of the nadir towards C0 (default 0; 90 = aimed horizontally)
 ```
+
+## Walls
+
+```toml
+[[wall]]
+id = "W-outer"
+path = [[0, 0], [16, 0], [16, 12]]   # a polyline: each straight piece is a wall
+height_m = 3.0
+floor_m = 0.0                 # optional: where the wall starts (default 0)
+```
+
+Walls are opaque and have no thickness: draw them on their centre line or the face that matters. A luminaire whose
+line of sight to a point crosses a wall gives that point nothing; points and luminaires on a wall's face (within
+1 mm) are not hidden by it. Doorways are gaps between walls; a low wall (a cabinet, a parapet) blocks only the light
+passing below its top. Furniture, open doors and people are not modelled.
 
 ## Escape routes
 

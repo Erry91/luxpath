@@ -47,6 +47,17 @@ id = "L5"
 photometry = "bulkhead"
 position = [15.0, 11.0, 2.7]
 
+# The corridor's walls: 2 m wide, first east from x = 0 to 16, then north to the exit at y = 12.
+[[wall]]
+id = "W-outer"
+path = [[0, 0], [16, 0], [16, 12]]
+height_m = 3.0
+
+[[wall]]
+id = "W-inner"
+path = [[0, 2], [14, 2], [14, 12]]
+height_m = 3.0
+
 [[route]]
 id = "R1"
 name = "Corridor to exit A"

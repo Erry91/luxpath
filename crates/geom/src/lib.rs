@@ -145,6 +145,47 @@ pub fn distance_to_boundary(p: Vec2, polygon: &[Vec2]) -> f64 {
     edges(polygon).map(|(a, b)| distance_to_segment(p, a, b)).fold(f64::INFINITY, f64::min)
 }
 
+/// Sight lines crossing a wall closer than this (metres) to either end are not blocked by it: a point
+/// on a wall's face, or a luminaire fixed to it, sees its own side.
+pub const WALL_CLEARANCE_M: f64 = 1e-3;
+
+fn cross(a: Vec2, b: Vec2) -> f64 {
+    a.x * b.y - a.y * b.x
+}
+
+/// An opaque wall: a vertical panel on the plan segment from `a` to `b`, from `bottom_m` up to
+/// `top_m`. It has no thickness (drawn on its centre line or its face); door openings are gaps
+/// between walls.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Wall {
+    pub a: Vec2,
+    pub b: Vec2,
+    pub bottom_m: f64,
+    pub top_m: f64,
+}
+
+impl Wall {
+    /// Whether the straight line from `from` to `to` passes through the wall (its ends count as
+    /// wall: light grazing a corner is blocked). Lines running along the wall, vertical lines and
+    /// non-finite input are not blocked.
+    pub fn blocks(&self, from: Vec3, to: Vec3) -> bool {
+        let d = Vec2::new(to.x - from.x, to.y - from.y);
+        let e = self.b - self.a;
+        let denom = cross(d, e);
+        let length = d.length();
+        if !denom.is_finite() || denom.abs() <= f64::EPSILON * length * e.length() || length == 0.0 {
+            return false;
+        }
+        let w = self.a - Vec2::new(from.x, from.y);
+        let (t, s) = (cross(w, e) / denom, cross(w, d) / denom);
+        if !(0.0..=1.0).contains(&s) || t * length <= WALL_CLEARANCE_M || (1.0 - t) * length <= WALL_CLEARANCE_M {
+            return false;
+        }
+        let z = from.z + t * (to.z - from.z);
+        z >= self.bottom_m && z <= self.top_m
+    }
+}
+
 /// Wraps an angle in degrees into `[0, 360)`. Non-finite input returns `0.0`.
 pub fn wrap_degrees(deg: f64) -> f64 {
     if !deg.is_finite() {
@@ -191,6 +232,29 @@ mod tests {
         // The nearest edge of (1, 3) is x = 0 or y = 4 or x = 2: 1 m.
         assert_eq!(distance_to_boundary(Vec2::new(1.0, 3.0), &l), 1.0);
         assert_eq!(distance_to_boundary(Vec2::new(3.5, 1.0), &l), 0.5);
+    }
+
+    #[test]
+    fn walls_block_sight_lines_through_them_and_only_those() {
+        // A wall along x = 2 from y = −1 to 1, from the floor to 3 m.
+        let wall = Wall { a: Vec2::new(2.0, -1.0), b: Vec2::new(2.0, 1.0), bottom_m: 0.0, top_m: 3.0 };
+        let lum = Vec3::new(0.0, 0.0, 2.5);
+        assert!(wall.blocks(lum, Vec3::new(4.0, 0.0, 0.0)));
+        // Beside the wall's end, past it.
+        assert!(!wall.blocks(lum, Vec3::new(4.0, 3.0, 0.0)));
+        // Same side as the luminaire.
+        assert!(!wall.blocks(lum, Vec3::new(1.5, 0.0, 0.0)));
+        // Over the top: a 1 m wall, crossed halfway at z = 2.5 + 0.5 · (0 − 2.5) = 1.25.
+        let low = Wall { top_m: 1.0, ..wall };
+        assert!(!low.blocks(lum, Vec3::new(4.0, 0.0, 0.0)));
+        assert!(Wall { top_m: 1.25, ..wall }.blocks(lum, Vec3::new(4.0, 0.0, 0.0)));
+        // A point on the wall's face is not hidden by it; nor is a luminaire fixed to it.
+        assert!(!wall.blocks(lum, Vec3::new(2.0, 0.5, 0.0)));
+        assert!(!wall.blocks(Vec3::new(2.0, 0.0, 2.5), Vec3::new(0.0, 0.0, 0.0)));
+        // Straight down, along the wall, or with NaN: not blocked.
+        assert!(!wall.blocks(Vec3::new(5.0, 0.0, 3.0), Vec3::new(5.0, 0.0, 0.0)));
+        assert!(!wall.blocks(Vec3::new(2.0, -5.0, 1.0), Vec3::new(2.0, 5.0, 1.0)));
+        assert!(!wall.blocks(lum, Vec3::new(f64::NAN, 0.0, 0.0)));
     }
 
     #[test]

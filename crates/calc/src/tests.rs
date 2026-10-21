@@ -142,6 +142,21 @@ fn grids_sum_every_luminaire() {
 }
 
 #[test]
+fn a_wall_hides_a_luminaire_from_the_points_behind_it() {
+    // A corridor turning a corner: the luminaire at (0, 0, 2.5); a 3 m wall along x = 2 from y = −1 to 4.
+    // The point (4, 0, 0) is behind it and gets nothing; (1, 0, 0) is in front and gets the
+    // unobstructed 1000 · 2.5 / d³ with d² = 1 + 6.25.
+    let lum = Luminaire { position: Vec3::new(0.0, 0.0, 2.5), ..isotropic_at(2.5) };
+    let wall = Wall { a: Vec2::new(2.0, -1.0), b: Vec2::new(2.0, 4.0), bottom_m: 0.0, top_m: 3.0 };
+    let grid = Grid::new(vec![Vec3::new(4.0, 0.0, 0.0), Vec3::new(1.0, 0.0, 0.0)], Vec3::UP).unwrap();
+    let e = illuminance_with_walls(std::slice::from_ref(&lum), &[wall], &grid);
+    assert_eq!(e[0], Some(0.0));
+    assert!(close(e[1].unwrap(), 1000.0 * 2.5 / 7.25f64.powf(1.5)));
+    // Without the wall, the hidden point is lit.
+    assert!(illuminance(&[lum], &grid)[0].unwrap() > 0.0);
+}
+
+#[test]
 fn an_undefined_point_makes_the_statistics_unverifiable() {
     let lum = isotropic_at(2.0);
     let grid = Grid::new(vec![Vec3::new(0.0, 0.0, 0.0), Vec3::new(0.0, 0.0, 2.0)], Vec3::UP).unwrap();

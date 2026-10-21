@@ -45,6 +45,12 @@ id = "L6"
 photometry = "bulkhead"
 position = [12.5, 7.5, 3.0]
 
+# The office's outer walls, with exit B as a 1.2 m gap in the east wall.
+[[wall]]
+id = "W1"
+path = [[15, 4.4], [15, 0], [0, 0], [0, 10], [15, 10], [15, 5.6]]
+height_m = 3.2
+
 [[area]]
 id = "A1"
 name = "Open office"

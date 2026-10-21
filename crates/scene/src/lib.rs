@@ -2,6 +2,7 @@
 //!
 //! A scene is a TOML file (format version 1, `docs/scene-format.md`): the project's maintenance
 //! factor, the photometric files it uses (with each one's emergency output), placed luminaires,
+//! **walls** (which block light; doorways are gaps between them),
 //! **escape routes** (centre polylines with a width), **areas** (open/anti-panic and high-risk task
 //! areas, as polygons), **points of emphasis** (exits, changes of direction and level, safety
 //! equipment), and calculation settings. Scenes are human-readable and diffable, so a design can
@@ -18,7 +19,7 @@
 use std::collections::HashSet;
 use std::ops::Range;
 
-use luxpath_geom::{Vec2, Vec3};
+use luxpath_geom::{Vec2, Vec3, Wall};
 use luxpath_photometry::EmergencyOutput;
 use serde::Deserialize;
 use toml::Spanned;
@@ -74,6 +75,8 @@ struct File {
     #[serde(default)]
     luminaire: Vec<Spanned<LuminaireFile>>,
     #[serde(default)]
+    wall: Vec<Spanned<WallFile>>,
+    #[serde(default)]
     route: Vec<Spanned<RouteFile>>,
     #[serde(default)]
     area: Vec<Spanned<AreaFile>>,
@@ -121,6 +124,16 @@ struct LuminaireFile {
     rotation_deg: f64,
     #[serde(default)]
     tilt_deg: f64,
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct WallFile {
+    id: Spanned<String>,
+    path: Spanned<Vec<[f64; 2]>>,
+    height_m: Spanned<f64>,
+    #[serde(default)]
+    floor_m: f64,
 }
 
 #[derive(Deserialize)]
@@ -276,6 +289,8 @@ pub struct Scene {
     pub calculation: Calculation,
     pub photometry: Vec<PhotometryRef>,
     pub luminaires: Vec<PlacedLuminaire>,
+    /// Every straight piece of every `[[wall]]`.
+    pub walls: Vec<Wall>,
     pub routes: Vec<Route>,
     pub areas: Vec<Area>,
     pub points: Vec<Point>,
@@ -426,6 +441,22 @@ impl Scene {
             });
         }
 
+        let mut walls = Vec::new();
+        for w in &file.wall {
+            let w = w.get_ref();
+            c.unique(&mut ids, &w.id)?;
+            if !w.floor_m.is_finite() {
+                return Err(c.err(w.id.span(), "the floor height must be a finite number"));
+            }
+            let height = c.positive(&w.height_m, "the wall height")?;
+            let path = c.point2(&w.path, 2, "a wall's path")?;
+            for pair in path.windows(2) {
+                if let (Some(a), Some(b)) = (pair.first(), pair.get(1)) {
+                    walls.push(Wall { a: *a, b: *b, bottom_m: w.floor_m, top_m: w.floor_m + height });
+                }
+            }
+        }
+
         let mut routes = Vec::new();
         for r in &file.route {
             let r = r.get_ref();
@@ -501,6 +532,7 @@ impl Scene {
             calculation,
             photometry,
             luminaires,
+            walls,
             routes,
             areas,
             points,

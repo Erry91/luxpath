@@ -25,6 +25,11 @@ photometry = "bulkhead"
 position = [2.0, 1.0, 2.8]
 rotation_deg = 90
 
+[[wall]]
+id = "W1"
+path = [[0, 0], [10, 0], [10, 5]]
+height_m = 3
+
 [[route]]
 id = "R1"
 name = "Corridor to exit A"
@@ -54,6 +59,9 @@ fn a_scene_reads_into_its_model() {
     assert_eq!(s.luminaires[0].photometry, 0);
     assert_eq!(s.luminaires[0].rotation_deg, 90.0);
     assert_eq!(s.routes[0].path.len(), 3);
+    // One wall path of two pieces, from the floor to 3 m.
+    assert_eq!(s.walls.len(), 2);
+    assert_eq!((s.walls[1].a, s.walls[1].b, s.walls[1].top_m), (Vec2::new(10.0, 0.0), Vec2::new(10.0, 5.0), 3.0));
     assert_eq!(s.areas[0].kind, AreaKind::HighRisk);
     assert_eq!(s.areas[0].normal_lighting_lx, Some(500.0));
     assert_eq!(s.points[0].kind, PointKind::FireFighting);
@@ -76,16 +84,18 @@ fn malformed_scenes_give_located_errors() {
         (with("spacing_m = 0.5", "spacing = 0.5"), 9, "unknown field"),
         (with("spacing_m = 0.5", "spacing_m = 0"), 9, "above 0"),
         (with("photometry = \"bulkhead\"", "photometry = \"bulk\""), 22, "no [[photometry]] has the id `bulk`"),
-        (with("id = \"R1\"", "id = \"L1\""), 27, "used twice"),
-        (with("path = [[0, 1], [10, 1], [10, 6]]", "path = [[0, 1]]"), 29, "at least 2 points"),
-        (with("width_m = 2.0", "width_m = -2.0"), 30, "above 0"),
-        (with("kind = \"high-risk\"", "kind = \"stairs\""), 34, "not an area kind"),
-        (with("kind = \"high-risk\"", "kind = \"open\""), 36, "high-risk areas only"),
-        (with("kind = \"fire-fighting\"", "kind = \"extinguisher\""), 40, "not a point kind"),
-        (with("facing = [-2, 0, 0]", "facing = [0, 0, 0]"), 42, "must not be zero"),
+        (with("id = \"R1\"", "id = \"L1\""), 32, "used twice"),
+        (with("path = [[0, 1], [10, 1], [10, 6]]", "path = [[0, 1]]"), 34, "at least 2 points"),
+        (with("width_m = 2.0", "width_m = -2.0"), 35, "above 0"),
+        (with("kind = \"high-risk\"", "kind = \"stairs\""), 39, "not an area kind"),
+        (with("kind = \"high-risk\"", "kind = \"open\""), 41, "high-risk areas only"),
+        (with("kind = \"fire-fighting\"", "kind = \"extinguisher\""), 45, "not a point kind"),
+        (with("facing = [-2, 0, 0]", "facing = [0, 0, 0]"), 47, "must not be zero"),
         (with("emergency = { ballast_lumen_factor = 0.5 }", "emergency = { }"), 14, "either"),
         (with("position = [2.0, 1.0, 2.8]", "position = [2.0, 1.0]"), 23, ""),
         (with("format = \"luxpath-scene\"", "format = \"dialux\""), 1, "luxpath-scene"),
+        (with("height_m = 3", "height_m = 0"), 29, "above 0"),
+        (with("path = [[0, 0], [10, 0], [10, 5]]", "path = [[0, 0]]"), 28, "at least 2 points"),
         (with("[project]", "[project\n"), 4, ""),
     ];
     for (text, line, words) in cases {
