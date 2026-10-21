@@ -1,0 +1,12 @@
+IESNA:LM-63-2002
+[TEST] luxpath synthetic fixture
+[TESTLAB] none (written by hand)
+[MANUFAC] luxpath tests
+[LUMCAT] SYN-DOWN-1
+[LUMINAIRE] Synthetic downlight, rotationally symmetric
+TILT=NONE
+1 1000 1 4 1 1 2 0.1 0.1 0
+1 1 10
+0 30 60 90
+0
+300 250 120 0

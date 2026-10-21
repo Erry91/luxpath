@@ -45,9 +45,19 @@ title = "C-γ intensity table with bilinear interpolation"
 area = "photometry"
 tier = "P0"
 milestone = "M0"
-status = "partial"
-evidence = ["crates/photometry/src/lib.rs::c_is_interpolated_and_wraps_back_to_c0", "crates/photometry/src/lib.rs::malformed_tables_are_rejected"]
-notes = "Full (expanded) tables only. Missing: symmetry expansion (C0, C0-C180, C90-C270, quadrant), A/B-type photometry."
+status = "shipped"
+evidence = ["crates/photometry/src/lib.rs::c_is_interpolated_and_wraps_back_to_c0", "crates/photometry/src/lib.rs::malformed_tables_are_rejected", "crates/photometry/src/lib.rs::there_is_no_light_outside_the_measured_gamma_range", "crates/photometry/src/lib.rs::integrated_flux_is_exact_for_isotropic_and_close_for_lambertian"]
+notes = "Full tables; zero outside the measured γ range; flux by zonal integration. Symmetry expansion is `photometry.symmetry`."
+
+[[feature]]
+id = "photometry.symmetry"
+title = "Symmetry expansion (rotational, C0–C180, C90–C270, quadrants, none)"
+area = "photometry"
+tier = "P0"
+milestone = "M1"
+status = "shipped"
+evidence = ["crates/photometry/src/symmetry.rs::quadrants_mirror_into_four", "crates/photometry/src/symmetry.rs::half_planes_mirror_about_their_plane", "crates/photometry/tests/formats.rs::every_symmetry_reads_the_same_from_ies_and_eulumdat", "crates/photometry/tests/formats.rs::mirrored_directions_have_equal_intensities"]
+notes = "Every symmetry of both formats, checked plane by plane against the definition and by property tests. A C90–C270 file without a C180 plane gets an interpolated C0."
 
 [[feature]]
 id = "photometry.ies-read"
@@ -55,7 +65,9 @@ title = "Read IES LM-63 files (1995, 2002, 2019)"
 area = "photometry"
 tier = "P0"
 milestone = "M1"
-status = "planned"
+status = "partial"
+evidence = ["crates/photometry/src/ies.rs::a_quadrant_file_reads_into_a_full_table_in_cd_per_klm", "crates/photometry/src/ies.rs::absolute_photometry_takes_its_flux_from_the_table", "crates/photometry/src/ies.rs::older_editions_apply_the_ballast_lamp_factor_and_newer_ones_do_not", "crates/photometry/src/ies.rs::tilt_tables_are_read", "crates/photometry/src/ies.rs::errors_name_their_line", "crates/photometry/tests/fuzz.rs::fuzz_briefly"]
+notes = "Editions 1986–2019, type C, relative and absolute photometry, TILT=INCLUDE, located errors, fuzzed. Missing: type A and B photometry (refused, not guessed), TILT=<file>; the edition-specific factors are from our reading of the format, not yet checked against the LM-63 texts; no real manufacturer file tried yet."
 
 [[feature]]
 id = "photometry.ldt-read"
@@ -63,7 +75,9 @@ title = "Read EULUMDAT (.ldt) files"
 area = "photometry"
 tier = "P0"
 milestone = "M1"
-status = "planned"
+status = "partial"
+evidence = ["crates/photometry/src/ldt.rs::a_c0_c180_file_reads_into_a_full_table", "crates/photometry/src/ldt.rs::every_symmetry_indicator_selects_its_planes", "crates/photometry/src/ldt.rs::decimal_commas_and_latin1_are_accepted", "crates/photometry/src/ldt.rs::errors_name_their_line", "crates/photometry/tests/fuzz.rs::fuzz_briefly"]
+notes = "All five symmetry indicators, Latin-1, decimal commas, located errors, fuzzed. Missing: files with more than one lamp set (refused), a check of the declared light output ratio against the table; no real manufacturer file tried yet."
 
 [[feature]]
 id = "photometry.emergency-flux"
@@ -71,7 +85,9 @@ title = "Emergency-mode flux (ballast lumen factor) separate from mains flux"
 area = "photometry"
 tier = "P0"
 milestone = "M1"
-status = "planned"
+status = "shipped"
+evidence = ["crates/photometry/src/model.rs::emergency_flux_from_a_factor_or_lumens_within_range"]
+notes = "`Photometry::emergency_flux_lm` from a ballast lumen factor in (0, 1] or lumens up to the rated flux; out of range is an error. Photometric files do not hold it: the scene (M3) supplies it, and a missing value must give \"cannot verify\"."
 
 [[feature]]
 id = "photometry.gldf-read"

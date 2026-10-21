@@ -3,6 +3,7 @@
 //! - `ci`: every gate CI runs (fmt, clippy -D warnings, tests, wasm check, layers, parity).
 //! - `layers`: checks that crates only depend on crates in lower layers.
 //! - `parity`: validates `parity/features.toml` and prints progress by milestone.
+//! - `fuzz [seconds]`: fuzzes the photometric file readers (default 600 s, M1's exit criterion).
 
 mod layers;
 mod parity;
@@ -15,7 +16,8 @@ fn main() -> ExitCode {
         Some("ci") => ci(),
         Some("layers") => layers::run(),
         Some("parity") => parity::run(),
-        _ => Err("usage: cargo xtask <ci | layers | parity>".to_string()),
+        Some("fuzz") => fuzz(args.get(1).map_or("600", String::as_str)),
+        _ => Err("usage: cargo xtask <ci | layers | parity | fuzz [seconds]>".to_string()),
     };
     match result {
         Ok(()) => ExitCode::SUCCESS,
@@ -52,6 +54,17 @@ fn ci() -> Result<(), String> {
     }
     layers::run()?;
     parity::run()
+}
+
+fn fuzz(seconds: &str) -> Result<(), String> {
+    let seconds: u64 = seconds.parse().map_err(|_| format!("`{seconds}` is not a number of seconds"))?;
+    eprintln!("$ LUXPATH_FUZZ_SECONDS={seconds} cargo test --release -p luxpath-photometry --test fuzz -- --ignored");
+    let status = Command::new(env!("CARGO"))
+        .args(["test", "--release", "-p", "luxpath-photometry", "--test", "fuzz", "--", "--ignored", "--nocapture"])
+        .env("LUXPATH_FUZZ_SECONDS", seconds.to_string())
+        .status()
+        .map_err(|e| format!("could not run cargo: {e}"))?;
+    if status.success() { Ok(()) } else { Err("the fuzzer found a panic".into()) }
 }
 
 fn cargo(args: &[&str]) -> Result<(), String> {
