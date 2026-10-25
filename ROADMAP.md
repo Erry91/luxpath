@@ -32,6 +32,7 @@ luxpath's one-page summary. Details live in:
 
 | Date | Change |
 |---|---|
+| 2026-10-25 | EN 1838:2024 clause map: `docs/standards-parity.md` cites the 2024 clause of every requirement, from the table of contents in the free SIST preview (values stay unverified, gap 4), and lists what 2024 added: specific areas (5.4), safety signs (6), local area and standby lighting (7), the annexes. New parity entries `en1838.specific-areas`, `en1838.local-area`, `en1838.safety-signs`. |
 | 2026-10-22 | Public: the repository opened after a licence check; vulnerability reporting, topics, protected `main` with hosted CI on Linux, macOS and Windows (its first Windows run found a line-ending bug in a test, fixed). |
 | 2026-10-21 | Routes can be given as their floor outline (BIM models draw corridors as rooms), for Ashlar's emergency-lighting plugin (R2.9a). |
 | 2026-10-21 | Walls block light (gap 16): `[[wall]]` in scenes, sight lines tested against every wall piece; the corridor example's minimum drops from 1.45 to 0.60 lx once light no longer passes through its corner; 100 luminaires × 10,000 points × 36 walls in about 90 ms. |

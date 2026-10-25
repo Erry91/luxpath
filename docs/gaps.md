@@ -1,13 +1,13 @@
 # Gaps: what luxpath cannot do yet
 
-> **Last updated:** 2026-10-21 · **Change:** walls block light: row 16 narrowed to point luminaires (no longer an alpha blocker)
+> **Last updated:** 2026-10-25 · **Change:** row 4: clause numbers from the 2024 table of contents; values still unverified
 
 Every known shortfall, ranked by user impact. This is the work list: pick from the top, and remove or update a row
 in the same PR that closes it. **[alpha blocker]** rows fail the alpha gate (ROADMAP.md).
 
 | # | Gap | Why it ranks here | Milestone | Est. h |
 |---|---|---|---|---|
-| 4 | **[alpha blocker]** Requirement values not verified against EN 1838:2024 text | Values in `standards-parity.md` come from secondary sources | M4 | 3 + buying the standard |
+| 4 | **[alpha blocker]** Requirement values not verified against EN 1838:2024 text | Values in `standards-parity.md` come from secondary sources; since 2026-10-25 the clause numbers come from the 2024 table of contents (free preview), the values still do not | M4 | 3 + buying the standard |
 | 6 | **[alpha blocker]** No EN 1838 checks | The project's purpose | M4 | 25–40 |
 | 7 | **[alpha blocker]** No independent validation | Trust: nobody should rely on unvalidated numbers | M6 | 10–20 + human |
 | 10 | No reports beyond the terminal | Designers hand over documents | M5 | 15–25 |

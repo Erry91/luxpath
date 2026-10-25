@@ -27,6 +27,14 @@ claims are marketing until checked.
   Designs made to the 2013 centre-line rule may no longer comply. This is a concrete reason for a new tool.
 - Also new: a procedure for escape routes through open areas, local area lighting, more detail for points of
   emphasis and high-risk areas, and an informative Annex C (lockdown and prolonged power loss).
+- **Free preview (2026-10-25):** SIST, the Slovenian body, and iTeh publish the first 11 pages of SIST EN 1838:2025
+  free (kept in `plan/standards/`, never committed). It ends inside clause 3, so it holds no requirement value, but
+  its table of contents gives the 2024 clause numbers (now in `docs/standards-parity.md`) and its foreword lists the
+  changes from 2013: full-width escape routes, more detail for points of emphasis and specific areas of hazard
+  (new 5.4: toilets and changing rooms, public indoor swimming pools, plant rooms), and the lockdown considerations.
+  It also shows local area lighting (7.1) and standby lighting (7.2) as clauses of their own, safety signs as
+  clause 6, informative annexes on durations and activation times (A) and on-site measurement (B), and national
+  A-deviations (D).
 - Read with EN 50172:2024.
 
 ## 3. Existing tools

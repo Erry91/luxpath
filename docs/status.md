@@ -1,9 +1,16 @@
 # Status
 
-> **Last updated:** 2026-10-21
+> **Last updated:** 2026-10-25
 
 **Milestone:** M3 done (scene and `luxpath check`); M1–M2 done (photometry readers, engine). **Direction under study:** EN 1838 checks on IFC models
 (docs/research.md §6–7). The IFC inspector (`luxpath inspect-ifc`, an early piece of M7) is done.
+
+## EN 1838:2024 clause map (2026-10-25)
+`docs/standards-parity.md` now cites the 2024 clause of every requirement, from the table of contents of the free
+SIST EN 1838:2025 preview; the values are still from secondary sources (gap 4). The preview also shows what the 2024
+edition added, now rows and parity entries: specific areas (5.4: toilets and changing rooms, public indoor swimming
+pools, plant rooms), safety signs (6), local area lighting (7.1). Next: the scene's area kinds for 5.4 and 7.1, and a
+finding per requirement, each "cannot verify" until its value is verified.
 
 ## Walls (2026-10-21)
 Scenes have `[[wall]]`s (polylines with a height); a luminaire whose sight line to a point crosses one gives that
@@ -48,6 +55,7 @@ FireExit flags. Luminaires collapse into few types (410 → 5), so a photometry 
 
 ## Blockers
 - None. **Before M4:** the EN 1838:2024 text (Italian edition UNI EN 1838:2025) is needed to verify values (gap 4).
+  The free SIST preview (`plan/standards/`) gave the 2024 clause numbers and the list of changes, but no values.
 
 ## Open questions (owner)
 - Practitioner questions in `docs/research.md` §5.
