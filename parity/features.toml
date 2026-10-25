@@ -262,6 +262,30 @@ milestone = "M4"
 status = "planned"
 
 [[feature]]
+id = "en1838.specific-areas"
+title = "Specific areas new in 2024: toilets and changing rooms, public indoor swimming pools, plant rooms (5.4)"
+area = "en1838"
+tier = "P1"
+milestone = "M4"
+status = "planned"
+
+[[feature]]
+id = "en1838.local-area"
+title = "Local area lighting, new in 2024 (7.1)"
+area = "en1838"
+tier = "P2"
+milestone = "M4"
+status = "planned"
+
+[[feature]]
+id = "en1838.safety-signs"
+title = "Safety signs: illumination, viewing distance and mounting height (6)"
+area = "en1838"
+tier = "P1"
+milestone = "M4"
+status = "planned"
+
+[[feature]]
 id = "en1838.edition-2013"
 title = "Check against the withdrawn 2013 edition (centre line) for older projects"
 area = "en1838"
