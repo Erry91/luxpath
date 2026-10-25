@@ -1,6 +1,10 @@
 //! M2's performance budget: 100 luminaires × 10,000 points in under 100 ms, with a realistic table
 //! (C every 5°, γ every 1°). Timing means something only in release builds, so this test is
 //! ignored by default and `cargo xtask ci` runs it with `--release -- --ignored`.
+//!
+//! The budgets are for a developer's machine (about 55 ms there). Shared CI machines vary from run to run, from as
+//! fast to about twice as slow (53 to 101 ms on GitHub's Linux runners, which failed a fixed 100 ms at random), so
+//! under CI each budget is doubled ([`CI_FACTOR`]): a real slowdown of twice or more still fails there.
 
 #![allow(clippy::unwrap_used)]
 
@@ -31,6 +35,15 @@ fn scene() -> (Vec<Luminaire>, Grid) {
     (luminaires, grid)
 }
 
+/// How much slower than a developer's machine a shared CI machine may be.
+const CI_FACTOR: u32 = 2;
+
+/// `ms` on a developer's machine; [`CI_FACTOR`] times that where the `CI` variable is set (GitHub Actions sets it).
+fn budget(ms: u64) -> Duration {
+    let ci = std::env::var_os("CI").is_some_and(|v| !v.is_empty() && v != "false");
+    Duration::from_millis(ms) * if ci { CI_FACTOR } else { 1 }
+}
+
 /// The best of five runs of `f`.
 fn best_of_five(f: impl Fn() -> Vec<Option<f64>>) -> Duration {
     let mut best = Duration::MAX;
@@ -49,7 +62,8 @@ fn a_hundred_luminaires_over_ten_thousand_points_within_budget() {
     let (luminaires, grid) = scene();
     let best = best_of_five(|| illuminance(&luminaires, &grid));
     eprintln!("100 luminaires × 10,000 points: {best:?} (best of 5)");
-    assert!(best < Duration::from_millis(100), "{best:?} is over the 100 ms budget");
+    let limit = budget(100);
+    assert!(best < limit, "{best:?} is over the {limit:?} budget");
 }
 
 #[test]
@@ -77,5 +91,6 @@ fn walls_stay_within_budget() {
     }
     let best = best_of_five(|| illuminance_with_walls(&luminaires, &walls, &grid));
     eprintln!("100 luminaires × 10,000 points × {} walls: {best:?} (best of 5)", walls.len());
-    assert!(best < Duration::from_millis(500), "{best:?} is over the 500 ms budget");
+    let limit = budget(500);
+    assert!(best < limit, "{best:?} is over the {limit:?} budget");
 }

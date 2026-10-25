@@ -45,7 +45,8 @@ fn ci() -> Result<(), String> {
     cargo(&["clippy", "--workspace", "--all-targets", "--", "-D", "warnings"])?;
     cargo(&["test", "--workspace"])?;
     // M2's budget: timing is meaningful only in release.
-    cargo(&["test", "--release", "-p", "luxpath-calc", "--test", "performance", "--", "--ignored"])?;
+    // `--nocapture` prints the timings even when they pass, so a budget nearly reached shows in every log.
+    cargo(&["test", "--release", "-p", "luxpath-calc", "--test", "performance", "--", "--ignored", "--nocapture"])?;
     if wasm_target_installed() {
         let mut args = vec!["check", "--target", "wasm32-unknown-unknown"];
         for krate in WASM_CRATES {
