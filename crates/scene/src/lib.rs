@@ -215,12 +215,37 @@ pub struct Route {
     pub floor_m: f64,
 }
 
+/// What an area is, for EN 1838:2024: each kind has its own requirements (`docs/standards-parity.md`).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AreaKind {
-    /// An open (anti-panic) area.
+    /// An open (anti-panic) area (5.2).
     Open,
-    /// A high-risk task area.
+    /// A high-risk task area (5.3).
     HighRisk,
+    /// Toilets and changing rooms (5.4.1).
+    Toilets,
+    /// A public indoor swimming pool (5.4.2).
+    SwimmingPool,
+    /// A motor generator, control, switch or plant room (5.4.3).
+    PlantRoom,
+    /// An area lit by local area lighting (7.1).
+    LocalArea,
+}
+
+impl AreaKind {
+    const NAMES: [(&'static str, AreaKind); 6] = [
+        ("open", AreaKind::Open),
+        ("high-risk", AreaKind::HighRisk),
+        ("toilets", AreaKind::Toilets),
+        ("swimming-pool", AreaKind::SwimmingPool),
+        ("plant-room", AreaKind::PlantRoom),
+        ("local-area", AreaKind::LocalArea),
+    ];
+
+    /// The name scenes use for this kind.
+    pub fn name(self) -> &'static str {
+        Self::NAMES.iter().find(|(_, k)| *k == self).map_or("open", |(n, _)| n)
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -493,11 +518,11 @@ impl Scene {
         for a in &file.area {
             let a = a.get_ref();
             c.unique(&mut ids, &a.id)?;
-            let kind = match a.kind.get_ref().as_str() {
-                "open" => AreaKind::Open,
-                "high-risk" => AreaKind::HighRisk,
-                other => return Err(c.err(a.kind.span(), format!("`{other}` is not an area kind (open, high-risk)"))),
-            };
+            let kind =
+                AreaKind::NAMES.iter().find(|(n, _)| *n == a.kind.get_ref()).map(|(_, k)| *k).ok_or_else(|| {
+                    let names: Vec<&str> = AreaKind::NAMES.iter().map(|(n, _)| *n).collect();
+                    c.err(a.kind.span(), format!("`{}` is not an area kind ({})", a.kind.get_ref(), names.join(", ")))
+                })?;
             let normal_lighting_lx = match &a.normal_lighting_lx {
                 Some(lx) if kind == AreaKind::HighRisk => Some(c.positive(lx, "the normal lighting's illuminance")?),
                 Some(lx) => return Err(c.err(lx.span(), "`normal_lighting_lx` belongs to high-risk areas only")),

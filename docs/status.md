@@ -12,6 +12,14 @@ edition added, now rows and parity entries: specific areas (5.4: toilets and cha
 pools, plant rooms), safety signs (6), local area lighting (7.1). Next: the scene's area kinds for 5.4 and 7.1, and a
 finding per requirement, each "cannot verify" until its value is verified.
 
+## Findings per requirement (2026-10-25)
+`luxpath check` now lists, under "Requirements (EN 1838:2024)", every requirement on every route, area and point,
+citing its clause (`luxpath_rules::en1838`). Each is "cannot verify": its value is not verified (gap 4), or the
+element's numbers could not be computed, which the finding then says. Scenes have four more area kinds for what 2024
+added: `toilets` (5.4.1), `swimming-pool` (5.4.2), `plant-room` (5.4.3) and `local-area` (7.1). A test keeps the
+code's requirements, `parity/features.toml` and `docs/standards-parity.md` in agreement. Next, once the standard is
+bought: thresholds per requirement, tested on both sides (M4).
+
 ## Walls (2026-10-21)
 Scenes have `[[wall]]`s (polylines with a height); a luminaire whose sight line to a point crosses one gives that
 point nothing. In the corridor example the minimum on the route drops from 1.45 lx to 0.60 lx once light no longer

@@ -98,13 +98,24 @@ outline = [[0, 0], [16, 0], [16, 2], [0, 2]]
 ```toml
 [[area]]
 id = "A1"
-kind = "open"                 # "open" (anti-panic) or "high-risk" (high-risk task area)
+kind = "open"                 # see the kinds below
 outline = [[0, 0], [15, 0], [15, 10], [0, 10]]   # a polygon, at least three corners
 floor_m = 0.0                 # optional
 normal_lighting_lx = 300      # high-risk areas only: the normal lighting's maintained illuminance
 ```
 
-Open areas are computed less `open_area_border_m` from their edges; high-risk areas over their whole outline.
+Kinds, each with its EN 1838:2024 clause (`docs/standards-parity.md`):
+
+| `kind` | Area | Clause |
+|---|---|---|
+| `open` | open (anti-panic) area | 5.2 |
+| `high-risk` | high-risk task area | 5.3 |
+| `toilets` | toilets and changing rooms | 5.4.1 |
+| `swimming-pool` | public indoor swimming pool | 5.4.2 |
+| `plant-room` | motor generator, control, switch or plant room | 5.4.3 |
+| `local-area` | area lit by local area lighting | 7.1 |
+
+Open areas are computed less `open_area_border_m` from their edges; every other kind over its whole outline.
 
 ## Points of emphasis
 

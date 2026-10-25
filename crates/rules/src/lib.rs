@@ -6,10 +6,11 @@
 //! file's table, an undefined point) makes the affected results "cannot verify", never a number.
 //!
 //! First standard (M4): **EN 1838:2024**, emergency lighting for buildings. Every requirement is
-//! a row in `docs/standards-parity.md` with its clause number; every check will cite that clause in
-//! its finding. Values come from the standard itself, paraphrased: never copy the standard's text or
-//! tables into this repository (`AGENTS.md` §1). Until M4, no requirement is checked, so the
-//! overall verdict is always [`Verdict::CannotVerify`].
+//! a row in `docs/standards-parity.md` with its clause number, and [`en1838`] lists those on routes,
+//! areas and points: each element gets a [`Finding`] per requirement, citing the clause. Values come
+//! from the standard itself, paraphrased: never copy the standard's text or tables into this
+//! repository (`AGENTS.md` §1). Until the values are verified (gap 4) and M4 checks them, every
+//! finding and the overall verdict are [`Verdict::CannotVerify`].
 //!
 //! Later: EN 12464-1 (interior workplaces) and EN 13201 (road lighting), as separate modules.
 //!
@@ -19,6 +20,8 @@ use luxpath_calc::{Grid, Luminaire, Stats, illuminance_with_walls};
 use luxpath_geom::Vec3;
 use luxpath_photometry::Photometry;
 use luxpath_scene::{AreaKind, PointKind, RouteShape, Scene};
+
+pub mod en1838;
 
 /// What one element's illuminance came to.
 #[derive(Debug, Clone, PartialEq)]
@@ -54,10 +57,26 @@ pub enum Verdict {
     CannotVerify,
 }
 
+/// One requirement applied to one element.
+#[derive(Debug, Clone, PartialEq)]
+pub struct Finding {
+    pub requirement: &'static en1838::Requirement,
+    /// The route, area or point it is about.
+    pub element: String,
+    pub verdict: Verdict,
+    /// Why the verdict is what it is.
+    pub reason: String,
+}
+
+/// Why no requirement can pass or fail yet.
+const UNVERIFIED_VALUE: &str = "its value is not yet verified against the standard's text (gap 4)";
+
 /// A scene's evaluation.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Evaluation {
     pub results: Vec<ElementResult>,
+    /// Each requirement on each element it applies to, in the order of [`Evaluation::results`].
+    pub findings: Vec<Finding>,
     /// What the numbers assume, for the report.
     pub assumptions: Vec<String>,
     /// Implausible photometric files and the like: shown, not hidden.
@@ -93,7 +112,7 @@ pub fn evaluate(scene: &Scene, photometry: &[Photometry]) -> Result<Evaluation, 
         },
         format!("maintenance factor {}", scene.maintenance_factor),
         format!(
-            "grids every {} m; {} points across each route's full width; open areas less a {} m border",
+            "grids every {} m; {} points across each route's full width; open areas less a {} m border, other areas over their whole outline",
             calc.spacing_m, calc.route_points_across, calc.open_area_border_m
         ),
     ];
@@ -177,6 +196,7 @@ pub fn evaluate(scene: &Scene, photometry: &[Photometry]) -> Result<Evaluation, 
         });
     }
     for a in &scene.areas {
+        // Only open areas are known to leave a border out; the others are computed over their whole outline.
         let border = if a.kind == AreaKind::Open { calc.open_area_border_m } else { 0.0 };
         results.push(ElementResult {
             id: a.id.clone(),
@@ -196,13 +216,35 @@ pub fn evaluate(scene: &Scene, photometry: &[Photometry]) -> Result<Evaluation, 
         });
     }
 
+    let mut findings = Vec::new();
+    for r in &results {
+        // An element whose numbers cannot be trusted says why; otherwise the value is what is missing.
+        let unverifiable = [Some(&r.horizontal), r.vertical.as_ref()].into_iter().flatten().find_map(|o| match o {
+            Outcome::CannotVerify(why) => Some(why.clone()),
+            Outcome::Computed(_) => None,
+        });
+        for requirement in en1838::requirements_for(r.kind) {
+            findings.push(Finding {
+                requirement,
+                element: r.id.clone(),
+                verdict: Verdict::CannotVerify,
+                reason: unverifiable.clone().unwrap_or_else(|| UNVERIFIED_VALUE.into()),
+            });
+        }
+    }
+
     Ok(Evaluation {
         results,
+        verdict_reason: format!(
+            "no {} requirement is checked yet: {} finding{} cannot be verified (milestone M4, gap 4); the values above are calculations only",
+            en1838::EDITION,
+            findings.len(),
+            if findings.len() == 1 { "" } else { "s" }
+        ),
+        findings,
         assumptions,
         warnings,
         verdict: Verdict::CannotVerify,
-        verdict_reason: "no EN 1838 requirement is checked yet (milestone M4); the values above are calculations only"
-            .into(),
     })
 }
 

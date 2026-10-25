@@ -108,6 +108,26 @@ fn malformed_scenes_give_located_errors() {
 }
 
 #[test]
+fn every_area_kind_reads_by_its_name() {
+    let kinds = [
+        ("open", AreaKind::Open),
+        ("toilets", AreaKind::Toilets),
+        ("swimming-pool", AreaKind::SwimmingPool),
+        ("plant-room", AreaKind::PlantRoom),
+        ("local-area", AreaKind::LocalArea),
+    ];
+    for (name, kind) in kinds {
+        let scene = with(
+            "kind = \"high-risk\"\noutline = [[0, 3], [6, 3], [6, 8], [0, 8]]\nnormal_lighting_lx = 500",
+            &format!("kind = \"{name}\"\noutline = [[0, 3], [6, 3], [6, 8], [0, 8]]"),
+        );
+        let s = Scene::parse(&scene).unwrap();
+        assert_eq!((s.areas[0].kind, kind.name()), (kind, name));
+    }
+    assert_eq!(AreaKind::HighRisk.name(), "high-risk");
+}
+
+#[test]
 fn a_route_can_be_its_floor_outline() {
     let s = Scene::parse(&with(
         "path = [[0, 1], [10, 1], [10, 6]]\nwidth_m = 2.0",
