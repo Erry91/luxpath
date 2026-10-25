@@ -32,6 +32,7 @@ luxpath's one-page summary. Details live in:
 
 | Date | Change |
 |---|---|
+| 2026-10-25 | Findings per requirement: `luxpath check` lists every EN 1838:2024 requirement on every route, area and point with its clause (`luxpath_rules::en1838`), each "cannot verify" until its value is verified (gap 4); scenes gain the area kinds 2024 added (`toilets`, `swimming-pool`, `plant-room`, `local-area`). |
 | 2026-10-25 | EN 1838:2024 clause map: `docs/standards-parity.md` cites the 2024 clause of every requirement, from the table of contents in the free SIST preview (values stay unverified, gap 4), and lists what 2024 added: specific areas (5.4), safety signs (6), local area and standby lighting (7), the annexes. New parity entries `en1838.specific-areas`, `en1838.local-area`, `en1838.safety-signs`. |
 | 2026-10-22 | Public: the repository opened after a licence check; vulnerability reporting, topics, protected `main` with hosted CI on Linux, macOS and Windows (its first Windows run found a line-ending bug in a test, fixed). |
 | 2026-10-21 | Routes can be given as their floor outline (BIM models draw corridors as rooms), for Ashlar's emergency-lighting plugin (R2.9a). |

@@ -45,6 +45,12 @@ fn every_example_is_calculated_and_cannot_be_verified_until_m4() {
         assert!(!out.contains("CANNOT VERIFY:") || out.contains("Verdict: CANNOT VERIFY"), "{out}");
         assert!(out.contains("min ") && out.contains("not a certificate"), "{out}");
         assert!(out.contains("walls block the light"), "the assumptions are stated:\n{out}");
+        // Every element's requirements are listed with their clause, none passing while values are unverified.
+        assert!(out.contains("Requirements (EN 1838:2024):"), "{out}");
+        for id in ids {
+            let cited = out.lines().any(|l| l.split_whitespace().nth(1) == Some(*id) && l.contains("CANNOT VERIFY"));
+            assert!(cited, "{scene}: no requirement cited for {id}:\n{out}");
+        }
     }
 }
 

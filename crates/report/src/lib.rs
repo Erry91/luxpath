@@ -7,11 +7,19 @@
 //!
 //! Layer L5: depends on `luxpath-scene` and `luxpath-rules`.
 
-use luxpath_rules::{ElementKind, Evaluation, Outcome, Verdict};
+use luxpath_rules::{ElementKind, Evaluation, Outcome, Verdict, en1838};
 use luxpath_scene::{AreaKind, Scene};
 
 const DISCLAIMER: &str =
     "This is a calculation, not a certificate: a competent designer remains responsible for the design.";
+
+fn verdict(v: Verdict) -> &'static str {
+    match v {
+        Verdict::Pass => "PASS",
+        Verdict::Fail => "FAIL",
+        Verdict::CannotVerify => "CANNOT VERIFY",
+    }
+}
 
 fn outcome(o: &Outcome) -> String {
     match o {
@@ -35,6 +43,7 @@ pub fn text(scene: &Scene, evaluation: &Evaluation) -> String {
             ElementKind::Route => "escape route".to_string(),
             ElementKind::Area(AreaKind::Open) => "open area".to_string(),
             ElementKind::Area(AreaKind::HighRisk) => "high-risk area".to_string(),
+            ElementKind::Area(k) => format!("area ({})", k.name()),
             ElementKind::Point(k) => format!("point ({})", k.name()),
         };
         let name = if r.name.is_empty() { String::new() } else { format!(" \"{}\"", r.name) };
@@ -43,6 +52,13 @@ pub fn text(scene: &Scene, evaluation: &Evaluation) -> String {
         out += &format!("  {plane:<10} {}\n", outcome(&r.horizontal));
         if let Some(v) = &r.vertical {
             out += &format!("  {:<10} {}\n", "facing", outcome(v));
+        }
+    }
+    if !evaluation.findings.is_empty() {
+        out += &format!("\nRequirements ({}):\n", en1838::EDITION);
+        for f in &evaluation.findings {
+            let r = f.requirement;
+            out += &format!("  {:<6} {:<8} {}: {}: {}\n", r.clause, f.element, r.title, verdict(f.verdict), f.reason);
         }
     }
     if !evaluation.warnings.is_empty() {
@@ -55,11 +71,6 @@ pub fn text(scene: &Scene, evaluation: &Evaluation) -> String {
     for a in &evaluation.assumptions {
         out += &format!("  - {a}\n");
     }
-    let verdict = match evaluation.verdict {
-        Verdict::Pass => "PASS",
-        Verdict::Fail => "FAIL",
-        Verdict::CannotVerify => "CANNOT VERIFY",
-    };
-    out += &format!("\nVerdict: {verdict}: {}\n{DISCLAIMER}\n", evaluation.verdict_reason);
+    out += &format!("\nVerdict: {}: {}\n{DISCLAIMER}\n", verdict(evaluation.verdict), evaluation.verdict_reason);
     out
 }
